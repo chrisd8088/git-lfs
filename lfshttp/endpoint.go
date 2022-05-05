@@ -76,35 +76,36 @@ func EndpointFromSshUrl(u *url.URL) Endpoint {
 // host_end() functions in connect.c:
 //   https://github.com/git/git/blob/0f828332d5ac36fc63b7d8202652efa152809856/connect.c#L673-L695
 //   https://github.com/git/git/blob/0f828332d5ac36fc63b7d8202652efa152809856/connect.c#L1051 
-func EndpointFromBareSshUrl(rawurl string) Endpoint {
+func EndpointFromBareSshUrl(s string) Endpoint {
 	var userHostAndPort string
-	toParse := rawurl
-	if i := strings.Index(rawurl, "@["); i >= 0 {
-		userHostAndPort = rawurl[0:i + 1]
-		toParse = rawurl[i + 1:]
+	leftToParse := s
+	if i := strings.Index(s, "@["); i >= 0 {
+		userHostAndPort = s[0:i + 1]
+		leftToParse = s[i + 1:]
 	}
 
 	var bracketed bool
-	if toParse[0] == '[' {
-		if i := strings.Index(toParse, "]"); i >= 0 {
-			userHostAndPort += toParse[1:i]
-			toParse = toParse[i + 1:]
+	if leftToParse[0] == '[' {
+		if i := strings.Index(leftToParse, "]"); i >= 0 {
+			userHostAndPort += leftToParse[1:i]
+			leftToParse = leftToParse[i + 1:]
 			bracketed = true
 		}
 	}
 
-	i := strings.Index(toParse, ":")
+	i := strings.Index(leftToParse, ":")
 	if i < 0 {
-		return Endpoint{Url: rawurl}
+		return Endpoint{Url: s}
 	}
-	path := toParse[i + 1:]
+	path := leftToParse[i + 1:]
 	if !bracketed {
-		userHostAndPort += toParse[0:i]
+		userHostAndPort += leftToParse[0:i]
 	}
 
 //// DEBUG: rename functions to use SSH, GitSyntax, etc.
-//// DEBUG: rename rawurl
 // https://github.com/golang/go/wiki/CodeReviewComments#initialisms
+
+//// DEBUG: rename Bare and bare in _test.go and t/* and comments above
 
 //// DEBUG: endpoint_finder_test.go -- add tests
 //// DEBUG: t-env.sh - split into multiple tests to avoid false success

@@ -684,7 +684,7 @@ func TestEndpointParsing(t *testing.T) {
 				Operation: "",
 			},
 		},
-		"port bare ssh": {
+		"port in brackets bare ssh": {
 			"[git@lfshttp.github.com:443]:git-lfs/git-lfs.git",
 			lfshttp.Endpoint{
 				Url: "https://lfshttp.github.com/git-lfs/git-lfs.git",
@@ -697,7 +697,97 @@ func TestEndpointParsing(t *testing.T) {
 				Operation: "",
 			},
 		},
-//// DEBUG chrisd - add git@[ test
+		"port in brackets after user bare ssh": {
+			"git@[lfshttp.github.com:443]:git-lfs/git-lfs.git",
+			lfshttp.Endpoint{
+				Url: "https://lfshttp.github.com/git-lfs/git-lfs.git",
+				SSHMetadata: ssh.SSHMetadata{
+					UserAndHost: "git@lfshttp.github.com",
+					Path:        "git-lfs/git-lfs.git",
+					Port:        "443",
+					Scheme:      "",
+				},
+				Operation: "",
+			},
+		},
+		"port in multiple brackets with ignored chars bare ssh": {
+			"[git@[lfshttp.git[hub.com:443]]xx:git-lfs/git-lfs.git",
+			lfshttp.Endpoint{
+				Url: "https://lfshttp.git[hub.com/git-lfs/git-lfs.git",
+				SSHMetadata: ssh.SSHMetadata{
+					UserAndHost: "[git@lfshttp.git[hub.com",
+					Path:        "git-lfs/git-lfs.git",
+					Port:        "443",
+					Scheme:      "",
+				},
+				Operation: "",
+			},
+		},
+		"in brackets after user bare ssh": {
+			"git@[lfshttp.github.com]:git-lfs/git-lfs.git",
+			lfshttp.Endpoint{
+				Url: "https://lfshttp.github.com/git-lfs/git-lfs.git",
+				SSHMetadata: ssh.SSHMetadata{
+					UserAndHost: "git@lfshttp.github.com",
+					Path:        "git-lfs/git-lfs.git",
+					Port:        "",
+					Scheme:      "",
+				},
+				Operation: "",
+			},
+		},
+		"in brackets bare ssh": {
+			"[git@lfshttp.github.com]:git-lfs/git-lfs.git",
+			lfshttp.Endpoint{
+				Url: "https://lfshttp.github.com/git-lfs/git-lfs.git",
+				SSHMetadata: ssh.SSHMetadata{
+					UserAndHost: "git@lfshttp.github.com",
+					Path:        "git-lfs/git-lfs.git",
+					Port:        "",
+					Scheme:      "",
+				},
+				Operation: "",
+			},
+		},
+		"incomplete brackets after user bare ssh": {
+			"git@[lfshttp.github.com:git-lfs/git-lfs.git",
+			lfshttp.Endpoint{
+				Url: "https://[lfshttp.github.com/git-lfs/git-lfs.git",
+				SSHMetadata: ssh.SSHMetadata{
+					UserAndHost: "git@[lfshttp.github.com",
+					Path:        "git-lfs/git-lfs.git",
+					Port:        "",
+					Scheme:      "",
+				},
+				Operation: "",
+			},
+		},
+		"incomplete brackets before user bare ssh": {
+			"[git@lfshttp.github.com:git-lfs/git-lfs.git",
+			lfshttp.Endpoint{
+				Url: "https://lfshttp.github.com/git-lfs/git-lfs.git",
+				SSHMetadata: ssh.SSHMetadata{
+					UserAndHost: "[git@lfshttp.github.com",
+					Path:        "git-lfs/git-lfs.git",
+					Port:        "",
+					Scheme:      "",
+				},
+				Operation: "",
+			},
+		},
+		"incomplete brackets bare ssh": {
+			"git@lfshttp.git[hub.com:git-lfs/git-lfs.git",
+			lfshttp.Endpoint{
+				Url: "https://lfshttp.git[hub.com/git-lfs/git-lfs.git",
+				SSHMetadata: ssh.SSHMetadata{
+					UserAndHost: "git@lfshttp.git[hub.com",
+					Path:        "git-lfs/git-lfs.git",
+					Port:        "",
+					Scheme:      "",
+				},
+				Operation: "",
+			},
+		},
 		"no user bare ssh": {
 			"github.com:git-lfs/git-lfs.git",
 			lfshttp.Endpoint{

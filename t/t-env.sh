@@ -716,28 +716,43 @@ begin_test "env with multiple ssh remotes"
   mkdir $reponame
   cd $reponame
   git init
-  git remote add origin git@git-server.com:user/repo.git
-  git remote add other git@other-git-server.com:user/repo.git
-  git remote add port [git@git-server.com:1337]:user/repo.git
-  git remote add port-anon [git-server.com:1337]:user/repo.git
-  git remote add port-abspath [git@git-server.com:1337]:/user/repo.git
-  git remote add port-relpath git@[git-server.com:1337]:user/repo.git
-  git remote add anon-abspath git-server.com:/user/repo.git
+  git remote add origin git@git-server.com:/user/repo.git
+  git remote add relpath git@relpath-git-server.com:user/repo.git
+  git remote add brackets-port [git@brackets-port-git-server.com:1337]:/user/repo.git
+  git remote add brackets-port-anon [git@brackets-port-anon-git-server.com:1337]:/user/repo.git
+  git remote add brackets-host git@[brackets-host-git-server.com]:/user/repo.git
+  git remote add brackets-host-anon [brackets-host-anon-git-server.com]:/user/repo.git
+  git remote add ssh-uri ssh://git@ssh-uri-git-server.com/user/repo.git
+  git remote add git-ssh-uri git+ssh://git@gitssh-uri-git-server.com/user/repo.git
+  git remote add ssh-git-uri ssh+git://git@ssh-gituri-git-server.com/user/repo.git
+  git remote add ssh-uri-port ssh://git@ssh-uri-port-git-server.com:1337/user/repo.git
+  git remote add ssh-uri-port-anon ssh://ssh-uri-port-anon-git-server.com:1337/user/repo.git
+  git remote add ssh-uri-anon ssh://ssh-uri-anon-git-server.com/user/repo.git
 
   expected='Endpoint=https://git-server.com/user/repo.git/info/lfs (auth=none)
-  SSH=git@git-server.com:user/repo.git
-Endpoint (other)=https://other-git-server.com/user/repo.git/info/lfs (auth=none)
-  SSH=git@other-git-server.com:user/repo.git
-Endpoint (port)=https://git-server.com/user/repo.git/info/lfs (auth=none)
-  SSH=[git@git-server.com:1337]:user/repo.git
-Endpoint (port-anon)=https://git-server.com/user/repo.git/info/lfs (auth=none)
-  SSH=[git-server.com:1337]:user/repo.git
-Endpoint (port-abspath)=https://git-server.com/user/repo.git/info/lfs (auth=none)
-  SSH=[git@git-server.com:1337]:/user/repo.git
-Endpoint (port-relpath)=https://git-server.com/user/repo.git/info/lfs (auth=none)
-  SSH=[git@git-server.com:1337]:user/repo.git
-Endpoint (anon-abspath)=https://git-server.com/user/repo.git/info/lfs (auth=none)
-  SSH=git-server.com:/user/repo.git
+  SSH=git@git-server.com:/user/repo.git
+Endpoint (relpath)=https://relpath-git-server.com/user/repo.git/info/lfs (auth=none)
+  SSH=git@relpath-git-server.com:user/repo.git
+Endpoint (brackets-port)=https://brackets-port-git-server.com/user/repo.git/info/lfs (auth=none)
+  SSH=[git@brackets-port-git-server.com:1337]:/user/repo.git
+Endpoint (brackets-port-anon)=https://brackets-port-anon-git-server.com/user/repo.git/info/lfs (auth=none)
+  SSH=[git@brackets-port-anon-git-server.com:1337]:/user/repo.git
+Endpoint (brackets-host)=https://brackets-host-git-server.com/user/repo.git/info/lfs (auth=none)
+  SSH=git@brackets-host-git-server.com:/user/repo.git
+Endpoint (brackets-host-anon)=https://brackets-host-anon-git-server.com/user/repo.git/info/lfs (auth=none)
+  SSH=brackets-host-anon-git-server.com:/user/repo.git
+Endpoint (ssh-uri)=https://ssh-uri-git-server.com/user/repo.git/info/lfs (auth=none)
+  SSH=ssh://git@ssh-uri-git-server.com/user/repo.git
+Endpoint (git-ssh-uri)=https://gitssh-uri-git-server.com/user/repo.git/info/lfs (auth=none)
+  SSH=ssh://git@gitssh-uri-git-server.com/user/repo.git
+Endpoint (ssh-git-uri)=https://ssh-gituri-git-server.com/user/repo.git/info/lfs (auth=none)
+  SSH=ssh://git@ssh-gituri-git-server.com/user/repo.git
+Endpoint (ssh-uri-port)=https://ssh-uri-port-git-server.com/user/repo.git/info/lfs (auth=none)
+  SSH=ssh://git@ssh-uri-port-git-server.com:1337/user/repo.git
+Endpoint (ssh-uri-port-anon)=https://ssh-uri-port-anon-git-server.com/user/repo.git/info/lfs (auth=none)
+  SSH=ssh://ssh-uri-port-anon-git-server.com:1337/user/repo.git
+Endpoint (ssh-uri-anon)=https://ssh-uri-anon-git-server.com/user/repo.git/info/lfs (auth=none)
+  SSH=ssh://ssh-uri-anon-git-server.com/user/repo.git
 GIT_SSH=lfs-ssh-echo'
 
   contains_same_elements "$expected" "$(git lfs env \

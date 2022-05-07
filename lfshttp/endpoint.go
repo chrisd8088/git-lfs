@@ -75,20 +75,20 @@ func EndpointFromSshUrl(u *url.URL) Endpoint {
 // We emulate the relevant logic from Git's parse_connect_url() and
 // host_end() functions in connect.c:
 //   https://github.com/git/git/blob/0f828332d5ac36fc63b7d8202652efa152809856/connect.c#L673-L695
-//   https://github.com/git/git/blob/0f828332d5ac36fc63b7d8202652efa152809856/connect.c#L1051 
+//   https://github.com/git/git/blob/0f828332d5ac36fc63b7d8202652efa152809856/connect.c#L1051
 func EndpointFromBareSshUrl(s string) Endpoint {
 	var userHostAndPort string
 	leftToParse := s
 	if i := strings.Index(s, "@["); i >= 0 {
-		userHostAndPort = s[0:i + 1]
-		leftToParse = s[i + 1:]
+		userHostAndPort = s[0 : i+1]
+		leftToParse = s[i+1:]
 	}
 
 	var bracketed bool
 	if leftToParse[0] == '[' {
 		if i := strings.Index(leftToParse, "]"); i >= 0 {
 			userHostAndPort += leftToParse[1:i]
-			leftToParse = leftToParse[i + 1:]
+			leftToParse = leftToParse[i+1:]
 			bracketed = true
 		}
 	}
@@ -97,15 +97,10 @@ func EndpointFromBareSshUrl(s string) Endpoint {
 	if i < 0 {
 		return Endpoint{Url: s}
 	}
-	path := leftToParse[i + 1:]
+	path := leftToParse[i+1:]
 	if !bracketed {
 		userHostAndPort += leftToParse[0:i]
 	}
-
-//// DEBUG: rename functions to use SSH, GitSyntax, etc.
-// https://github.com/golang/go/wiki/CodeReviewComments#initialisms
-
-//// DEBUG: rename Bare and bare in _test.go and t/* and comments above
 
 	match := sshHostPortRE.FindStringSubmatch(userHostAndPort)
 	if match == nil || len(match) < 2 {
@@ -122,7 +117,7 @@ func EndpointFromBareSshUrl(s string) Endpoint {
 	// Fallback URL for using HTTPS while still using SSH for git
 	host := endpoint.SSHMetadata.UserAndHost
 	if i = strings.Index(host, "@"); i >= 0 {
-		host = host[i + 1:]
+		host = host[i+1:]
 	}
 	endpoint.Url = fmt.Sprintf("https://%s/%s", host, strings.TrimLeft(path, "/"))
 

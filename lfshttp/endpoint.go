@@ -107,12 +107,6 @@ func EndpointFromBareSshUrl(s string) Endpoint {
 
 //// DEBUG: rename Bare and bare in _test.go and t/* and comments above
 
-//// DEBUG: endpoint_finder_test.go -- add tests
-//// DEBUG: t-env.sh - split into multiple tests to avoid false success
-////                 - also test ssh:// and git+ssh://, etc.
-
-//// note that IPv6 should be done via ssh:// only
-
 	match := sshHostPortRE.FindStringSubmatch(userHostAndPort)
 	if match == nil || len(match) < 2 {
 		return Endpoint{Url: UrlUnknown}

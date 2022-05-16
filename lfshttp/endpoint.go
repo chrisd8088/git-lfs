@@ -102,6 +102,19 @@ func EndpointFromBareSshUrl(s string) Endpoint {
 		userHostAndPort += leftToParse[0:i]
 	}
 
+//// DEBUG: rename functions to use SSH, GitSyntax, etc.
+// https://github.com/golang/go/wiki/CodeReviewComments#initialisms
+
+//// DEBUG: rename Bare and bare in _test.go and t/* and comments above
+
+//// DEBUG: test with IPv6 [::1] and add tests in _test.go, t/t-env, t/batch-transfer
+
+//// Documentation/config/protocol.txt
+//// t/t5603-clone-dirname.sh
+
+//// 86ceb337ec340c7db9b060b90bfab05a08b8251b in git/git
+//// 6b6c5f7a2f66751a93afce54277a1f30ab0dc521 in 2.3.7
+
 	match := sshHostPortRE.FindStringSubmatch(userHostAndPort)
 	if match == nil || len(match) < 2 {
 		return Endpoint{Url: UrlUnknown}

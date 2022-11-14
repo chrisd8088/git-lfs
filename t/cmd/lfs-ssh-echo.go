@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -58,14 +59,26 @@ func main() {
 	//   lfs-ssh-echo git@127.0.0.1 "git-upload-pack REPO"
 	//   lfs-ssh-echo git@127.0.0.1 "git-receive-pack REPO"
 	offset := 1
+	port := 22
 
 	checkSufficientArgs(offset)
-	if os.Args[offset] == "-o" {
+	if os.Args[offset] == "-oControlMaster=auto" {
+//// DEBUG chrisd -- offset +2 or +1??
+		offset += 2
+	}
+
+	checkSufficientArgs(offset)
+	if os.Args[offset] == "-o" && os.Args[offset+1] == "SendEnv=GIT_PROTOCOL" {
 		offset += 2
 	}
 
 	checkSufficientArgs(offset)
 	if os.Args[offset] == "-p" {
+		var err error
+		if port, err = strconv.Atoi(os.Args[offset+1]); err != nil {
+			fmt.Fprintf(os.Stderr, "bad port number: %q: %v", os.Args[offset+1], err)
+			os.Exit(1)
+		}
 		offset += 2
 	}
 
@@ -99,7 +112,7 @@ func main() {
 	repo := remoteCmd[1]
 
 	r := &sshResponse{
-		Href: fmt.Sprintf("http://127.0.0.1:%s/%s.git/info/lfs", os.Args[2], repo),
+		Href: fmt.Sprintf("http://127.0.0.1:%d/%s.git/info/lfs", port, repo),
 	}
 	switch repo {
 	case "/ssh-expired-absolute":

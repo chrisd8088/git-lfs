@@ -229,7 +229,14 @@ begin_test "batch transfers with ssh relative path bare endpoint (git-lfs-transf
   setup_remote_repo "$reponame"
   clone_repo "$reponame" "$reponame"
 
-  relrepodir="$(pwd | sed 's/^\///' | sed 's/[^\/][^\/]*/../g')$repodir"
+  if [ "$IS_WINDOWS" -eq 1 ]; then
+    curdir="/$(cygpath -m "$(pwd)" | sed 's/^\([A-Z]\):/\1/')"
+    absrepodir="/$(cygpath -m "$repodir" | sed 's/^\([A-Z]\):/\1/')"
+  else
+    curdir="$(pwd)"
+    absrepodir="$repodir"
+  fi
+  relrepodir="$(echo "$curdir" | sed 's/^\///' | sed 's/[^\/][^\/]*/../g')$absrepodir"
   sshurl="git@127.0.0.1:$relrepodir"
   git config lfs.url "$sshurl"
 

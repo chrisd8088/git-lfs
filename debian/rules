@@ -15,13 +15,12 @@ endif
 
 BUILD_DIR := obj-$(DEB_HOST_GNU_TYPE)
 export DH_GOPKG := github.com/git-lfs/git-lfs/v3
-# DH_GOLANG_EXCLUDES typically incorporates vendor exclusions
-export DH_GOLANG_EXCLUDES := test github.com/olekukonko/ts/* github.com/xeipuuv/* github.com/spf13/cobra/* github.com/kr/* github.com/pkg/errors github.com/alexbrainman/sspi/*
+export DH_GOLANG_EXCLUDES := t
 export DH_GOLANG_GO_GENERATE := 1
 export PATH := $(CURDIR)/$(BUILD_DIR)/bin:$(PATH)
 
-# by-default, dh_golang only copies *.go and other source - this upsets a bunch of vendor test routines
-export DH_GOLANG_INSTALL_ALL := 1
+# by-default, dh_golang only copies *.go and other source
+export DH_GOLANG_INSTALL_EXTRA := po
 export FORCE_LOCALIZE=true
 
 %:

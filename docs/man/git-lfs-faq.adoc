@@ -130,7 +130,7 @@ mandatory: backslashes are not allowed as path separators.
 Can I use a proxy with Git LFS?::
   Yes, Git LFS supports proxies using the same mechanisms that Git supports,
   namely the `http_proxy` environment variable and the configuration of
-  `http.proxy` (or `http.*.proxy` for per-URL usage).  However, Git LFS only
+  `http.proxy` (or `http.<url>.proxy` for per-URL usage).  However, Git LFS only
   supports proxies which use Basic or no authentication, and it doesn't
   currently support Digest or Kerberos authentication.
 +

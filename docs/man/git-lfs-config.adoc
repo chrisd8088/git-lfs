@@ -29,7 +29,7 @@ environment without having to modify the `.lfsconfig` file.
 
 Most options regarding git-lfs are contained in the `[lfs]` section,
 meaning they are all named `lfs.foo` or similar, although occasionally
-an lfs option can be scoped inside the configuration for a remote.
+an `lfs` option can be scoped inside the configuration for a remote.
 
 == LIST OF OPTIONS
 
@@ -37,12 +37,12 @@ an lfs option can be scoped inside the configuration for a remote.
 
 * `lfs.url` / `remote.<remote>.lfsurl`
 +
-The url used to call the Git LFS remote API. Default blank (derive from
+The URL used to call the Git LFS remote API. Default blank (derive from
 clone URL).
 * `lfs.pushurl` / `remote.<remote>.lfspushurl`
 +
-The url used to call the Git LFS remote API when pushing. Default blank
-(derive from either LFS non-push urls or clone url).
+The URL used to call the Git LFS remote API when pushing. Default blank
+(derive from either LFS non-push URLs or clone URL).
 * `remote.lfsdefault`
 +
 The remote used to find the Git LFS remote API. `lfs.url` and
@@ -103,7 +103,7 @@ authentication is needed against the LFS API. The contents of stdout are
 interpreted as the password.
 * `lfs.cachecredentials`
 +
-Enables in-memory SSH and Git Credential caching for a single 'git lfs'
+Enables in-memory SSH and Git Credential caching for a single `git lfs`
 command. Default: enabled.
 * `lfs.storage`
 +
@@ -160,7 +160,7 @@ should point to the process you wish to invoke. The protocol between the
 git-lfs client and the custom transfer process is documented at
 https://github.com/git-lfs/git-lfs/blob/main/docs/custom-transfers.md
 +
-must be a unique identifier that the LFS server understands. When
+Must be a unique identifier that the LFS server understands. When
 calling the LFS API the client will include a list of supported transfer
 types. If the server also supports this named transfer type, it will
 select it and actions returned from the API will be in relation to that
@@ -179,7 +179,7 @@ splitting the transfer workload between the processes.
 * `lfs.customtransfer.<name>.direction`
 +
 Specifies which direction the custom transfer process supports, either
-"download", "upload", or "both". The default if unspecified is "both".
+`download`, `upload`, or `both`. The default if unspecified is `both`.
 * `lfs.transfer.maxretries`
 +
 Specifies how many retries LFS will attempt per OID before marking the
@@ -235,7 +235,7 @@ gitignore(5). See git-lfs-fetch(1) for examples.
 +
 If non-zero, fetches refs which have commits within N days of the
 current date. Only local refs are included unless
-lfs.fetchrecentremoterefs is true. Also used as a basis for pruning old
+`lfs.fetchrecentremoterefs` is true. Also used as a basis for pruning old
 files. The default is 7 days.
 * `lfs.fetchrecentremoterefs`
 +
@@ -243,7 +243,7 @@ If true, fetches remote refs (for the remote you're fetching) as well as
 local refs in the recent window. This is useful to fetch objects for
 remote branches you might want to check out later. The default is true;
 if you set this to false, fetching for those branches will only occur
-when you either check them out (losing the advantage of fetch --recent),
+when you either check them out (losing the advantage of fetch `--recent`),
 or create a tracking local branch separately then fetch again.
 * `lfs.fetchrecentcommitsdays`
 +
@@ -262,13 +262,13 @@ Default false.
 +
 The number of days added to the `lfs.fetchrecent*` settings to determine
 what can be pruned. Default is 3 days, i.e. that anything fetched at the
-very oldest edge of the 'recent window' is eligible for pruning 3 days
+very oldest edge of the "recent window" is eligible for pruning 3 days
 later.
 * `lfs.pruneremotetocheck`
 +
 Set the remote that LFS files must have been pushed to in order for them
 to be considered eligible for local pruning. Also the remote which is
-called if --verify-remote is enabled.
+called if `--verify-remote` is enabled.
 * `lfs.pruneverifyremotealways`
 +
 Always run `git lfs prune` as if `--verify-remote` was provided.
@@ -293,8 +293,8 @@ Note: this setting is normally set by LFS itself on receiving a 401
 response (authentication required), you don't normally need to set it
 manually.
 +
-If set to "basic" then credentials will be requested before making batch
-requests to this url, otherwise a public request will initially be
+If set to `basic` then credentials will be requested before making batch
+requests to this URL, otherwise a public request will initially be
 attempted.
 * `lfs.<url>.locksverify`
 +
@@ -315,16 +315,16 @@ hook. You should set this if you're not using File Locking, or your Git
 server verifies locked files on pushes automatically.
 +
 Supports URL config lookup as described in:
-https://git-scm.com/docs/git-config#git-config-httplturlgt. To set this
-value per-host:
+https://git-scm.com/docs/git-config#Documentation/git-config.txt-httplturlgt
+To set this value per-host:
 `git config --global lfs.https://github.com/.locksverify [true|false]`.
 * `lfs.<url>.contenttype`
 +
 Determines whether Git LFS should attempt to detect an appropriate HTTP
-`Content-Type` header when uploading using the 'basic' upload adapter.
+`Content-Type` header when uploading using the `basic` upload adapter.
 If set to false, the default header of
 `Content-Type: application/octet-stream` is chosen instead. Default:
-'true'.
+`true`.
 * `lfs.skipdownloaderrors`
 +
 Causes Git LFS not to abort the smudge filter when a download error is
@@ -350,8 +350,8 @@ format:
 `<direction> <current>/<total files> <downloaded>/<total> <name>`
 +
 Each field is described below:
-** `direction`: The direction of transfer, either "checkout",
-"download", or "upload".
+** `direction`: The direction of transfer, either `checkout`,
+`download`, or `upload`.
 ** `current` The index of the currently transferring file.
 ** `total files` The estimated count of all files to be transferred.
 ** `downloaded` The number of bytes already downloaded.
@@ -364,35 +364,35 @@ output stream is not attached to a terminal. The default is `false`
 which makes Git LFS detect whether stdout is a terminal and suppress
 progress when it's not; you can disable this behaviour and force
 progress status even when standard output stream is not a terminal by
-setting either variable to 1, 'yes' or 'true'.
+setting either variable to `true`, `1`, `on`, `yes`, or `t`.
 * `GIT_LFS_SKIP_SMUDGE`
 +
 Sets whether or not Git LFS will skip attempting to convert pointers of
 files tracked into their corresponding objects when checked out into a
-working copy. If 'true', '1', 'on', or similar, Git LFS will skip the
+working copy. If `true`, `1`, `on`, or similar, Git LFS will skip the
 smudge process in both `git lfs smudge` and `git lfs filter-process`. If
-unset, or set to 'false', '0', 'off', or similar, Git LFS will smudge
+unset, or set to `false`, `0`, `off`, or similar, Git LFS will smudge
 files as normal.
 * `GIT_LFS_SKIP_PUSH`
 +
 Sets whether or not Git LFS will attempt to upload new Git LFS object in
-a pre-push hook. If 'true', '1', 'on', or similar, Git LFS will skip the
+a pre-push hook. If `true`, `1`, `on`, or similar, Git LFS will skip the
 pre-push hook, so no new Git LFS objects will be uploaded. If unset, or
-set to 'false', '0', 'off', or similar, Git LFS will proceed as normal.
+set to `false`, `0`, `off`, or similar, Git LFS will proceed as normal.
 * `GIT_LFS_SET_LOCKABLE_READONLY` `lfs.setlockablereadonly`
 +
 These settings, the first an environment variable and the second a
-gitconfig setting, control whether files marked as 'lockable' in
+gitconfig setting, control whether files marked as `lockable` in
 `git lfs track` are made read-only in the working copy when not locked
 by the current user. The default is `true`; you can disable this
-behaviour and have all files writeable by setting either variable to 0,
-'no' or 'false'.
+behaviour and have all files writeable by setting either variable to
+`false`, `0`, `off`, `no`, or `f`.
 * `lfs.lockignoredfiles`
 +
 This setting controls whether Git LFS will set ignored files that match
 the lockable pattern read only as well as tracked files. The default is
-`false`; you can enable this behavior by setting the variable to 1,
-'yes', or 'true'.
+`false`; you can enable this behavior by setting the variable to
+`true`, `1`, `on`, `yes`, or `t`.
 * `lfs.defaulttokenttl`
 +
 This setting sets a default token TTL when git-lfs-authenticate does not
@@ -403,20 +403,20 @@ servers that don't include the TTL.
 
 == LFSCONFIG
 
-The .lfsconfig file in a repository is read and interpreted in the same
-format as the file stored in .git/config. It allows a subset of keys to
+The `.lfsconfig` file in a repository is read and interpreted in the same
+format as the file stored in `.git/config`. It allows a subset of keys to
 be used, including and limited to:
 
-* lfs.allowincompletepush
-* lfs.fetchexclude
-* lfs.fetchinclude
-* lfs.gitprotocol
-* lfs.locksverify
-* lfs.pushurl
-* lfs.skipdownloaderrors
-* lfs.url
-* lfs.\{*}.access
-* remote.\{name}.lfsurl
+* `lfs.allowincompletepush`
+* `lfs.fetchexclude`
+* `lfs.fetchinclude`
+* `lfs.gitprotocol`
+* `lfs.locksverify`
+* `lfs.pushurl`
+* `lfs.skipdownloaderrors`
+* `lfs.url`
+* `lfs.\{*}.access`
+* `remote.\{name}.lfsurl`
 
 The set of keys allowed in this file is restricted for security reasons.
 

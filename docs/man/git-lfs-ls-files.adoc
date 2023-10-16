@@ -33,7 +33,7 @@ indicates an LFS pointer.
    manual inspection; the exact format may change at any time.
 `-a`::
 `--all`::
-   Inspects the full history of the repository, not the current HEAD (or other
+   Inspects the full history of the repository, not the current `HEAD` (or other
    provided reference). This will include previous versions of LFS objects that
    are no longer found in the current tree.
 `--deleted`::

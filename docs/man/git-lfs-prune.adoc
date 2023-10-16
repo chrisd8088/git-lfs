@@ -17,14 +17,14 @@ following:
 
 * the current checkout
 * all existing stashes
-* a 'recent branch'; see <<_recent_files>>
-* a 'recent commit' on the current branch or recent branches; see
+* a "recent branch"; see <<_recent_files>>
+* a "recent commit" on the current branch or recent branches; see
 <<_recent_files>>
 * a commit which has not been pushed; see <<_unpushed_lfs_files>>
 * any other worktree checkouts; see git-worktree(1)
 
 In general terms, prune will delete files you're not currently using and
-which are not 'recent', so long as they've been pushed i.e. the local
+which are not "recent", so long as they've been pushed, i.e., the local
 copy is not the only one.
 
 The reflog is not considered, only commits. Therefore LFS objects that
@@ -58,7 +58,7 @@ gitignore(5).
   Contact the remote and check that copies of the files we would delete
   definitely exist before deleting. See <<_verify_remote>>.
 `--no-verify-remote`::
-  Disables remote verification if lfs.pruneverifyremotealways was enabled in
+  Disables remote verification if `lfs.pruneverifyremotealways` was enabled in
   settings. See <<_verify_remote>>.
 `--verbose`::
 `-v`::
@@ -66,9 +66,9 @@ gitignore(5).
 
 == RECENT FILES
 
-Prune won't delete LFS files referenced by 'recent' commits, in case you
+Prune won't delete LFS files referenced by "recent" commits, in case you
 want to use them again without having to download. The definition of
-'recent' is derived from the one used by git-lfs-fetch(1) to download
+"recent" is derived from the one used by git-lfs-fetch(1) to download
 recent objects with the `--recent` option, with an offset of a number of
 days (default 3) to ensure that we always keep files you download for a
 few days.
@@ -79,7 +79,7 @@ Here are the git-config(1) settings that control this behaviour:
 recent settings when using them to decide when to prune. So for a
 reference to be considered old enough to prune, it has to be this many
 days older than the oldest reference that would be downloaded via
-`git lfs fetch --recent`. Only used if the relevant fetch recent 'days'
+`git lfs fetch --recent`. Only used if the relevant fetch recent "days"
 setting is non-zero. Default 3 days.
 * `lfs.fetchrecentrefsdays` `lfs.fetchrecentremoterefs`
 `lfs.fetchrecentcommitsdays` These have the same meaning as
@@ -100,7 +100,7 @@ ahead, any LFS files referenced in those commits is unpushed and will
 not be deleted. This works because the LFS pre-push hook always ensures
 that LFS files are pushed before the remote branch is updated.
 
-See <<_default_remote>>, for which remote is considered 'pushed' for
+See <<_default_remote>>, for which remote is considered "pushed" for
 pruning purposes.
 
 == VERIFY REMOTE
@@ -128,16 +128,16 @@ process take longer.
 == DEFAULT REMOTE
 
 When identifying <<_unpushed_lfs_files>> and performing <<_verify_remote>>, a
-single remote, 'origin', is normally used as the reference. This one
+single remote, `origin`, is normally used as the reference. This one
 remote is considered canonical; even if you use multiple remotes, you
 probably want to retain your local copies until they've made it to that
-remote. 'origin' is used by default because that will usually be a main
+remote. `origin` is used by default because that will usually be a main
 central repo, or your fork of it - in both cases that's a valid remote
 backup of your work. If origin doesn't exist then by default nothing
-will be pruned because everything is treated as 'unpushed'.
+will be pruned because everything is treated as "unpushed".
 
 You can alter the remote via git config: `lfs.pruneremotetocheck`. Set
-this to a different remote name to check that one instead of 'origin'.
+this to a different remote name to check that one instead of `origin`.
 
 == SEE ALSO
 

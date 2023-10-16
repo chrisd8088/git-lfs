@@ -2,30 +2,45 @@
 
 == NAME
 
-git-lfs-clone - Efficiently clone a LFS-enabled repository
+git-lfs-clone - Efficiently clone a LFS-enabled repository (prior to Git v2.15)
 
 == SYNOPSIS
 
-`git lfs clone` [git clone options] <repository> [<directory>]
+`git lfs clone` [`git clone` options] <repository> [<directory>]
 
 == DESCRIPTION
 
-Clone an LFS enabled Git repository more efficiently by disabling LFS
-during the git clone, then performing a 'git lfs pull' directly
-afterwards.
+This command is deprecated; use `git clone` instead unless you are using
+a version of Git earlier than v2.15.0.
 
-'git lfs clone' also installs all of the repo-level hooks (.git/hooks)
-that LFS requires to operate. If `--separate-git-dir` is given, the
-hooks will be installed there.
+Git's support for long-running filter processes was introduced in Git
+v2.11.0 and was enhanced with the ability for a filter process such as
+Git LFS to delay its processing of individual files so as to allow it to
+operate asynchronously.  With these two features, the `git clone` command
+will clone an LFS-enabled repository more efficiently than `git lfs clone`,
+and so `git clone` should now be preferred in all cases.
 
-This is faster than a regular 'git clone' because that will download LFS
-content using the smudge filter, which is executed individually per file
-in the working copy. This is relatively inefficient compared to the
-batch mode and parallel downloads performed by 'git lfs pull'.
+However, with versions of Git earlier than v2.15, and especially with
+versions earlier than v2.11, the `git lfs clone` command will be more
+efficient because it performs `git clone` with Git LFS disabled and then
+executes `git lfs pull` directly afterwards.  The batch mode and parallel
+downloads performed by `git lfs pull` will be faster than a regular
+`git clone` with Git LFS enabled because the older versions of Git will
+either invoke Git LFS's "smudge" filter process individually for each
+file (prior to v2.11) or will wait for the long-running Git LFS filter
+process to operate on each file sequentially rather than in parallel.
+
+The `git lfs clone` command also installs all of the repo-level hooks
+(`.git/hooks`) that LFS requires to operate.  If `--separate-git-dir`
+is given, the hooks will be installed there.
+
+The `git lfs clone` command is no longer updated to provide parity with
+the `git clone` command's options, and may be removed in a future
+Git LFS major release.
 
 == OPTIONS
 
-All options supported by 'git clone'
+Most options supported by `git clone` as of Git v2.11, plus:
 
 `-I <paths>`::
 `--include=<paths>`::
@@ -34,7 +49,7 @@ All options supported by 'git clone'
 `--exclude=<paths>`::
   See <<_include_and_exclude>>.
 `--skip-repo`::
-  Skip installing repo-level hooks (.git/hooks) that LFS
+  Skip installing repo-level hooks (`.git/hooks`) that LFS
   requires. Disabled by default.
 
 == INCLUDE AND EXCLUDE

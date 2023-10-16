@@ -15,7 +15,7 @@ the intention of blocking attempts by other users to update the given
 path. Locking a file requires the file to exist in the working copy.
 
 Once locked, LFS will verify that Git pushes do not modify files locked
-by other users. See the description of the `lfs.<url>.locksverify`
+by other users. See the description of the `lfs.<url>.locksVerify`
 config key in git-lfs-config(5) for details.
 
 == OPTIONS

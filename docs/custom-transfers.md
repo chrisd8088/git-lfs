@@ -28,48 +28,48 @@ the transfers should be made, without having to query the API server.
 In this case it's possible to use the custom transfer agent directly,
 without querying the server, by using the following config option:
 
-* `lfs.standalonetransferagent`, `lfs.<url>.standalonetransferagent`
+* `lfs.standaloneTransferAgent`, `lfs.<url>.standaloneTransferAgent`
 
   Specifies a custom transfer agent to be used if the API server URL matches as
-  in `git config --get-urlmatch lfs.standalonetransferagent <apiurl>`.
+  in `git config --get-urlmatch lfs.standaloneTransferAgent <apiurl>`.
   `git-lfs` will not contact the API server.  It instead sets stage 2 transfer
-  actions to `null`.  `lfs.<url>.standalonetransferagent` can be used to
+  actions to `null`.  `lfs.<url>.standaloneTransferAgent` can be used to
   configure a custom transfer agent for individual remotes.
-  `lfs.standalonetransferagent` unconditionally configures a custom transfer
+  `lfs.standaloneTransferAgent` unconditionally configures a custom transfer
   agent for all remotes.  The custom transfer agent must be specified in
-  a `lfs.customtransfer.<name>` settings group.
+  a `lfs.customTransfer.<name>` settings group.
 
 ## Defining a Custom Transfer Type
 
 A custom transfer process is defined under a settings group called
-`lfs.customtransfer.<name>`, where `<name>` is an identifier (see
+`lfs.customTransfer.<name>`, where `<name>` is an identifier (see
 [Naming](#naming) below).
 
-* `lfs.customtransfer.<name>.path`
+* `lfs.customTransfer.<name>.path`
 
   `path` should point to the process you wish to invoke. This will be invoked at
   the start of all transfers (possibly many times, see the `concurrent` option
   below) and the protocol over stdin/stdout is defined below in the
   [Protocol](#protocol) section.
 
-* `lfs.customtransfer.<name>.args`
+* `lfs.customTransfer.<name>.args`
 
   If the custom transfer process requires any arguments, these can be provided
   here. Typically you would only need this if your process was multi-purpose or
   particularly flexible, most of the time you won't need it.  Note that this
   string will be expanded by the shell.
 
-* `lfs.customtransfer.<name>.concurrent`
+* `lfs.customTransfer.<name>.concurrent`
 
   If true (the default), git-lfs will invoke the custom transfer process
-  multiple times in parallel, according to `lfs.concurrenttransfers`, splitting
+  multiple times in parallel, according to `lfs.concurrentTransfers`, splitting
   the transfer workload between the processes.
 
   If you would prefer that only one instance of the transfer process is invoked,
   maybe because you want to do your own parallelism internally (e.g. slicing
   files into parts), set this to false.
 
-* `lfs.customtransfer.<name>.direction`
+* `lfs.customTransfer.<name>.direction`
 
   Specifies which direction the custom transfer process supports, either
   `download`, `upload`, or `both`. The default if unspecified is `both`.
@@ -131,9 +131,9 @@ The message will look like this:
 * `remote`: The Git remote.  It can be a remote name like `origin` or an URL
   like `ssh://git.example.com//path/to/repo`.  A standalone transfer agent can
   use it to determine the location of remote files.
-* `concurrent`: reflects the value of `lfs.customtransfer.<name>.concurrent`, in
+* `concurrent`: reflects the value of `lfs.customTransfer.<name>.concurrent`, in
   case the process needs to know
-* `concurrenttransfers`: reflects the value of `lfs.concurrenttransfers`, for if
+* `concurrenttransfers`: reflects the value of `lfs.concurrentTransfers`, for if
   the transfer process wants to implement its own concurrency and wants to
   respect this setting.
 

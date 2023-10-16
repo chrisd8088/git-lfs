@@ -23,8 +23,8 @@ examined.
 The default is to perform all checks.
 
 In your Git configuration or in a `.lfsconfig` file, you may set
-`lfs.fetchexclude` to a comma-separated list of paths. If
-`lfs.fetchexclude` is defined, then any Git LFS files whose paths match
+`lfs.fetchExclude` to a comma-separated list of paths. If
+`lfs.fetchExclude` is defined, then any Git LFS files whose paths match
 one in that list will not be checked for consistency. Paths are matched
 using wildcard matching as per gitignore(5).
 

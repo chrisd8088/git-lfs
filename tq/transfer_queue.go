@@ -981,7 +981,7 @@ func (q *TransferQueue) Wait() {
 		fmt.Fprintln(os.Stderr, tr.Tr.Get(`info: Uploading failed due to unsupported Content-Type header(s).
 info: Consider disabling Content-Type detection with:
 info:
-info:   $ git config lfs.contenttype false`))
+info:   $ git config lfs.contentType false`))
 	}
 }
 

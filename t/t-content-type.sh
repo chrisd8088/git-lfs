@@ -64,6 +64,6 @@ begin_test "content-type: warning message"
 
   grep "info: Uploading failed due to unsupported Content-Type header(s)." push.log
   grep "info: Consider disabling Content-Type detection with:" push.log
-  grep "info:   $ git config lfs.contenttype false" push.log
+  grep "info:   $ git config lfs.contentType false" push.log
 )
 end_test

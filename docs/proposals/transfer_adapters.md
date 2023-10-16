@@ -41,7 +41,7 @@ It is up to each individual transfer mechanism to define how URLs are used.
 4. The LFS core will pass oids to transfer to this adapter in bulk, and receive
    events back from the adapter for transfer progress, and file completion.
 5. Each adapter is responsible for its own parallelism, but should respect the
-   `lfs.concurrenttransfers` setting. For example the default (current) approach
+   `lfs.concurrentTransfers` setting. For example the default (current) approach
    will parallelise on files (oids), but others may parallelise in other ways
    e.g. downloading multiple parts of the same file at once
 6. Each adapter should store its own temporary files. On file completion it must

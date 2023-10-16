@@ -70,7 +70,7 @@ func (lv *lockVerifier) Verify(ref *git.Ref) {
 				}
 			} else {
 				Error(tr.Tr.Get("Remote %q does not support the Git LFS locking API. Consider disabling it with:", cfg.PushRemote()))
-				Error("  $ git config lfs.%s.locksverify false", lv.endpoint.Url)
+				Error("  $ git config lfs.%s.locksVerify false", lv.endpoint.Url)
 				if lv.verifyState == verifyStateEnabled {
 					ExitWithError(err)
 				}
@@ -78,7 +78,7 @@ func (lv *lockVerifier) Verify(ref *git.Ref) {
 		}
 	} else if lv.verifyState == verifyStateUnknown {
 		Error(tr.Tr.Get("Locking support detected on remote %q. Consider enabling it with:", cfg.PushRemote()))
-		Error("  $ git config lfs.%s.locksverify true", lv.endpoint.Url)
+		Error("  $ git config lfs.%s.locksVerify true", lv.endpoint.Url)
 	}
 
 	lv.addLocks(ref, ours, lv.ourLocks)

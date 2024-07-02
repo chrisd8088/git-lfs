@@ -247,4 +247,3 @@ In alphabetical order:
 [rubyist-user]: https://github.com/rubyist
 [technoweenie-user]: https://github.com/technoweenie
 [ttaylorr-user]: https://github.com/ttaylorr
-

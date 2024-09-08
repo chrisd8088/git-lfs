@@ -117,6 +117,8 @@ begin_test "cloneSSL"
 
   git lfs track "*.dat" 2>&1 | tee track.log
   grep "Tracking \"\*.dat\"" track.log
+  git add .gitattributes
+  git commit -m "Track *.dat"
 
   # generate some test data & commits with random LFS data
   echo "[
@@ -191,6 +193,8 @@ begin_test "clone ClientCert"
 
   git lfs track "*.dat" 2>&1 | tee track.log
   grep "Tracking \"\*.dat\"" track.log
+  git add .gitattributes
+  git commit -m "Track *.dat"
 
   # generate some test data & commits with random LFS data
   echo "[
@@ -276,6 +280,8 @@ begin_test "clone ClientCert with homedir certs"
 
   git lfs track "*.dat" 2>&1 | tee track.log
   grep "Tracking \"\*.dat\"" track.log
+  git add .gitattributes
+  git commit -m "Track *.dat"
 
   # generate some test data & commits with random LFS data
   echo "[
@@ -309,6 +315,8 @@ begin_test "clone with flags"
 
   git lfs track "*.dat" 2>&1 | tee track.log
   grep "Tracking \"\*.dat\"" track.log
+  git add .gitattributes
+  git commit -m "Track *.dat"
 
   # generate some test data & commits with random LFS data
   echo "[

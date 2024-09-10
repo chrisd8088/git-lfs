@@ -10,6 +10,9 @@ if [ "$IS_WINDOWS" -eq 0 -a "$IS_MAC" -eq 0 ]; then
 fi
 export GIT_LIBNSS
 
+export CREDSDIR="$REMOTEDIR/creds-clone"
+setup_creds
+
 begin_test "clone"
 (
   set -e
@@ -843,8 +846,5 @@ begin_test "clone (HTTP server/proxy require cookies)"
     [ ! -e "lfs" ]
     assert_clean_status
   popd
-
-  # to avoid breaking t-credentials.sh
-  rm "$CREDSDIR/localhost"
 )
 end_test

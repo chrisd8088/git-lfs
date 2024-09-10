@@ -561,8 +561,8 @@ write_creds_file() {
 setup_creds() {
   mkdir -p "$CREDSDIR"
   write_creds_file ":user:pass" "$CREDSDIR/127.0.0.1"
-  write_creds_file "::pass" "$CREDSDIR/--$certpath"
-  write_creds_file "::pass" "$CREDSDIR/--$keypath"
+  write_creds_file "::pass" "$CREDSDIR/--$(echo "$LFS_CLIENT_CERT_FILE" | tr / -)"
+  write_creds_file "::pass" "$CREDSDIR/--$(echo "$LFS_CLIENT_KEY_FILE_ENCRYPTED" | tr / -)"
 }
 
 # setup initializes the clean, isolated environment for integration tests.
@@ -617,8 +617,6 @@ setup() {
   fi | sed -e 's/^/# /g'
 
   # setup the git credential password storage
-  local certpath="$(echo "$LFS_CLIENT_CERT_FILE" | tr / -)"
-  local keypath="$(echo "$LFS_CLIENT_KEY_FILE_ENCRYPTED" | tr / -)"
   setup_creds
 
   echo "#"

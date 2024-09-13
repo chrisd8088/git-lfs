@@ -207,13 +207,16 @@ begin_test "clone ClientCert"
   # Test with both unencrypted and encrypted client certificate keys
   cd "$TRASHDIR"
 
-  for i in "$LFS_CLIENT_KEY_FILE" "$LFS_CLIENT_KEY_FILE_ENCRYPTED"
-  do
-    export GIT_SSL_CERT_PASSWORD_PROTECTED=1
-    git config --global http.$LFS_CLIENT_CERT_URL/.sslKey "$i"
+  declare -a key_enc_pairs=(
+    "$LFS_CLIENT_KEY_FILE"           "false"
+    "$LFS_CLIENT_KEY_FILE_ENCRYPTED" "true"
+  )
 
-    newclonedir="testcloneClietCert1"
-    rm -fr "$newclonedir"
+  for ((i=0; i<${#key_enc_pairs[@]}; i+=2)); do
+    git config --global "http.$LFS_CLIENT_CERT_URL/.sslKey" "${key_enc_pairs[i]}"
+    git config --global "http.sslCertPasswordProtected" "${key_enc_pairs[i+1]}"
+
+    newclonedir="testcloneClientCert${i}"
     git lfs clone "$CLIENTCERTGITSERVER/$reponame" "$newclonedir" 2>&1 | tee lfsclone.log
     grep "Cloning into" lfsclone.log
     grep "Downloading LFS objects:" lfsclone.log

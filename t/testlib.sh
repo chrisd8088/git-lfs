@@ -44,13 +44,14 @@ atexit () {
 # create the trash dir
 trap "atexit" SIGKILL SIGINT SIGTERM EXIT
 
-GITSERVER=undefined
+GITSERVER="undefined"
 
 setup
 
-GITSERVER=$(cat "$LFS_URL_FILE")
-SSLGITSERVER=$(cat "$LFS_SSL_URL_FILE")
-CLIENTCERTGITSERVER=$(cat "$LFS_CLIENT_CERT_URL_FILE")
+GITSERVER="$(cat "$LFS_URL_FILE")"
+SSLGITSERVER="$(cat "$LFS_SSL_URL_FILE")"
+CLIENTCERTGITSERVER="$(cat "$LFS_CLIENT_CERT_URL_FILE")"
+
 cd "$TRASHDIR"
 
 # Mark the beginning of a test. A subshell should immediately follow this

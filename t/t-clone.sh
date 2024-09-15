@@ -256,14 +256,13 @@ begin_test "clone ClientCert with homedir certs"
     git config --global "http.sslBackend" "openssl"
   fi
 
-  reponame="test-cloneClientCert-homedir"
-
   cp "$LFS_CLIENT_KEY_FILE" "$HOME/lfs-client-key-file"
   cp "$LFS_CLIENT_CERT_FILE" "$HOME/lfs-client-cert-file"
 
-  git config --global http.$LFS_CLIENT_CERT_URL/.sslKey "~/lfs-client-key-file"
-  git config --global http.$LFS_CLIENT_CERT_URL/.sslCert "~/lfs-client-cert-file"
+  git config --global "http.$LFS_CLIENT_CERT_URL/.sslKey" "~/lfs-client-key-file"
+  git config --global "http.$LFS_CLIENT_CERT_URL/.sslCert" "~/lfs-client-cert-file"
 
+  reponame="test-cloneClientCert-homedir"
   setup_remote_repo "$reponame"
   clone_repo_clientcert "$reponame" "$reponame"
 
@@ -769,7 +768,7 @@ begin_test "clone (HTTP server/proxy require cookies)"
   GITSERVER=$(echo "$GITSERVER" | sed 's/127\.0\.0\.1/localhost/')
   cp "$CREDSDIR/127.0.0.1" "$CREDSDIR/localhost"
   printf "localhost\tTRUE\t/\tFALSE\t2145916800\tCOOKIE_GITLFS\tsecret\n" >> "$REMOTEDIR/cookies.txt"
-  git config --global http.cookieFile "$REMOTEDIR/cookies.txt"
+  git config --global "http.cookieFile" "$REMOTEDIR/cookies.txt"
 
   reponame="require-cookie-test"
   setup_remote_repo "$reponame"

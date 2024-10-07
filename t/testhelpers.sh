@@ -610,9 +610,10 @@ setup() {
     git config --global user.name "Git LFS Tests"
     git config --global user.email "git-lfs@example.com"
     git config --global http.sslcainfo "$LFS_CERT_FILE"
-    git config --global http.$LFS_CLIENT_CERT_URL/.sslKey "$LFS_CLIENT_KEY_FILE"
-    git config --global http.$LFS_CLIENT_CERT_URL/.sslCert "$LFS_CLIENT_CERT_FILE"
+    git config --global "http.$LFS_CLIENT_CERT_URL/.sslKey" "$LFS_CLIENT_KEY_FILE"
+    git config --global "http.$LFS_CLIENT_CERT_URL/.sslCert" "$LFS_CLIENT_CERT_FILE"
     git config --global init.defaultBranch main
+    git config --global "gc.autodetach" "false"
   fi | sed -e 's/^/# /g'
 
   # setup the git credential password storage

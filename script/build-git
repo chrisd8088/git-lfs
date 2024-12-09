@@ -5,7 +5,7 @@ DIR="$1"
 case $(uname -s) in
   Darwin)
     brew install zlib
-    brew link --force zlib
+    brew link --force curl zlib pcre2 openssl
     CURLDIR="$(curl-config --prefix)";;
   Linux)
     export DEBIAN_FRONTEND=noninteractive

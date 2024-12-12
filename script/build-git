@@ -46,7 +46,7 @@ command -v curl
 command -v openssl
 command -v pcre2grep
 curl --version
-openssl -version
+openssl version
 pcre2grep --version
 curl-config --libs
 case $(uname -s) in

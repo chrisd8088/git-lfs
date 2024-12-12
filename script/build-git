@@ -53,7 +53,7 @@ case $(uname -s) in
   Darwin)
     otool -L "$(command -v git)"
     echo "curldir: $CURLDIR"
-    otool -L "$(git --exec-path)/git-http-fetch"
+    otool -L "$(git --exec-path)/git-http-fetch";;
   Linux)
-    ldd "$(command -v git)"
+    ldd "$(command -v git)";;
 esac

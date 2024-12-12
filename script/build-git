@@ -34,8 +34,24 @@ if test -n "$CURLDIR"; then
     "CURLDIR=$CURLDIR" \
     >> config.mak
 fi
-make -j2
+V=1 make -j2
 sudo make install
 
 echo "Git version:"
 git --version
+
+echo "Git dependencies:"
+command -v curl
+command -v openssl
+command -v pcre2grep
+curl --version
+openssl --version
+pcre2grep --version
+curl-config --libs
+case $(uname -s) in
+  Darwin)
+    echo "curldir: $CURLDIR"
+    otool -L "$(command -v git)"
+  Linux)
+    ldd "$(command -v git)"
+esac

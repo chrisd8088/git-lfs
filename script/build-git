@@ -17,7 +17,7 @@ case $(uname -s) in
       sed -e 's/^deb/deb-src/' /etc/apt/sources.list | sudo tee /etc/apt/sources.list.d/src.list
     fi
     sudo apt-get update
-    sudo apt-get install build-essential
+    sudo apt-get install build-essential pcre2
     sudo apt-get -y build-dep git;;
 esac
 
@@ -27,6 +27,7 @@ cd "$DIR"
 printf "%s\n" \
   "NO_GETTEXT=YesPlease" \
   "NO_OPENSSL=YesPlease" \
+  "USE_LIBPCRE2=YesPlease" \
   "prefix=$GIT_INSTALL_PATH" \
   > config.mak
 if test -n "$CURLDIR"; then
@@ -34,7 +35,7 @@ if test -n "$CURLDIR"; then
     "CURLDIR=$CURLDIR" \
     >> config.mak
 fi
-make -j2
+make -j4
 sudo make install
 
 echo "Git version:"
@@ -52,9 +53,9 @@ case $(uname -s) in
   Darwin)
     otool -L "$(command -v git)"
     echo "curldir: $CURLDIR"
-    otool -L "$(git --exec-path)/git-http-fetch";;
+    otool -L "$(git --exec-path)/git-http-backend";;
   Linux)
     ldd "$(command -v git)"
     echo "curl"
-    ldd "$(git --exec-path)/git-http-fetch";;
+    ldd "$(git --exec-path)/git-http-backend";;
 esac

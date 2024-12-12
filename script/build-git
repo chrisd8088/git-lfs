@@ -17,7 +17,7 @@ case $(uname -s) in
       sed -e 's/^deb/deb-src/' /etc/apt/sources.list | sudo tee /etc/apt/sources.list.d/src.list
     fi
     sudo apt-get update
-    sudo apt-get install build-essential pcre2
+    sudo apt-get install build-essential libpcre2-8-0
     sudo apt-get -y build-dep git;;
 esac
 
@@ -44,10 +44,10 @@ git --version
 echo "Git dependencies:"
 command -v curl
 command -v openssl
-command -v pcre2grep
+#command -v pcre2grep
 curl --version
 openssl version
-pcre2grep --version
+#pcre2grep --version
 curl-config --libs
 case $(uname -s) in
   Darwin)

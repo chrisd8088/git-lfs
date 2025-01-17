@@ -191,10 +191,19 @@ func NewRevListScanner(include, excluded []string, opt *ScanRefsOptions) (*RevLi
 		return nil, err
 	}
 
+	// Setup a goroutine to drain stderr as large amounts of error output
+	// may cause the subprocess to block trying to write to stdout.
+	errorMessages := make(chan []byte)
+	go func() {
+		msg, _ := io.ReadAll(stderr)
+		errorMessages <- msg
+		close(errorMessages)
+	}()
+
 	return &RevListScanner{
 		s: bufio.NewScanner(stdout),
 		closeFn: func() error {
-			msg, _ := io.ReadAll(stderr)
+			msg := <-errorMessages
 
 			// First check if there was a non-zero exit code given
 			// when Wait()-ing on the command execution.

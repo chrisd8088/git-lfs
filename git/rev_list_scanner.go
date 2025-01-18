@@ -187,6 +187,7 @@ func NewRevListScanner(include, excluded []string, opt *ScanRefsOptions) (*RevLi
 	}
 
 	tracerx.Printf("run_command: git %s", strings.Join(args, " "))
+	tracerx.Printf("      stdin:\n%s", strings.Join(append(includeExcludeShas(include, excluded), opt.SkippedRefs...), "\n"))
 	if err := cmd.Start(); err != nil {
 		return nil, err
 	}
@@ -204,6 +205,7 @@ func NewRevListScanner(include, excluded []string, opt *ScanRefsOptions) (*RevLi
 		s: bufio.NewScanner(stdout),
 		closeFn: func() error {
 			msg := <-errorMessages
+			tracerx.Printf("     stderr:\n%s", msg)
 
 			// First check if there was a non-zero exit code given
 			// when Wait()-ing on the command execution.

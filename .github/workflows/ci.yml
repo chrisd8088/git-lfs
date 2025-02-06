@@ -4,60 +4,6 @@ env:
   GOTOOLCHAIN: local
 
 jobs:
-  build-default:
-    name: Build with default Git
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-        go: ['1.23.x']
-    runs-on: ${{ matrix.os }}
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        persist-credentials: false
-        ref: ${{ github.ref }}
-      # We specify the current ref because otherwise the checkout turns
-      # annotated tags into lightweight ones, breaking "git describe".
-      # See https://github.com/actions/checkout/issues/290 and
-      # https://github.com/actions/checkout/issues/882 for details.
-    - uses: ruby/setup-ruby@v1
-    - run: gem install asciidoctor
-    - uses: actions/setup-go@v5
-      with:
-        go-version: ${{ matrix.go }}
-    - run: sudo apt-get update && sudo apt-get -y install gettext libarchive-tools
-      if: ${{ startsWith(matrix.os, 'ubuntu-') }}
-      env:
-          DEBIAN_FRONTEND: noninteractive
-    - run: script/cibuild
-      env:
-          FORCE_LOCALIZE: true
-    - run: CGO_ENABLED=0 make release
-      env:
-          FORCE_LOCALIZE: true
-    - run: mkdir -p bin/assets
-    - run: find bin/releases -name "*$(uname -s | tr A-Z a-z)*" | xargs -I{} cp {} bin/assets
-    - uses: actions/upload-artifact@v4
-      with:
-        name: ${{ matrix.os }}
-        path: bin/assets
-  build-go:
-    name: Build with specific Go
-    strategy:
-      matrix:
-        go: ['1.22.x']
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        persist-credentials: false
-        ref: ${{ github.ref }}
-    - uses: actions/setup-go@v5
-      with:
-        go-version: ${{ matrix.go }}
-    - run: script/cibuild
   build-windows:
     name: Build on Windows
     runs-on: windows-latest
@@ -67,7 +13,11 @@ jobs:
         fetch-depth: 0
         persist-credentials: false
         ref: ${{ github.ref }}
+    - run: mkdir -p "$HOME/test1"
+      shell: bash
     - uses: ruby/setup-ruby@v1
+    - run: mkdir -p "$HOME/test2"
+      shell: bash
     - run: gem install asciidoctor
     - run: Rename-Item -Path C:\msys64 -NewName msys64-tmp -Force
       # We move the MSYS2 installed for Ruby aside to prevent use of its Git,
@@ -88,109 +38,9 @@ jobs:
         flavor: minimal
       # We install the SDK so as to have access to the msgfmt.exe binary
       # from the GNU gettext package.
+    - run: set -x; env; type bash; cygpath -aw /; cat /etc/profile
+      shell: bash
     - run: GOPATH="$HOME/go" PATH="$HOME/go/bin:$PATH" env -u TMPDIR script/cibuild
       shell: bash
       # We clear the TMPDIR set for Ruby so mktemp and Go use the same
       # volume for temporary files.
-    - run: rm -f commands/mancontent_gen.go
-      shell: bash
-    - run: GOPATH="$HOME/go" PATH="$HOME/go/bin:$PATH" make GOARCH=386 -B
-      shell: bash
-      env:
-        FORCE_LOCALIZE: true
-    - run: mv bin\git-lfs.exe git-lfs-x86.exe
-    - run: rm -f commands/mancontent_gen.go
-      shell: bash
-    - run: GOPATH="$HOME/go" PATH="$HOME/go/bin:$PATH" make GOARCH=amd64 -B
-      shell: bash
-      env:
-        FORCE_LOCALIZE: true
-    - run: mv bin\git-lfs.exe git-lfs-x64.exe
-    - run: rm -f commands/mancontent_gen.go
-      shell: bash
-    - run: GOPATH="$HOME/go" PATH="$HOME/go/bin:$PATH" make GOARCH=arm64 -B
-      shell: bash
-      env:
-        FORCE_LOCALIZE: true
-    - run: mv bin\git-lfs.exe git-lfs-arm64.exe
-    - run: iscc script\windows-installer\inno-setup-git-lfs-installer.iss
-    - run: mkdir -p bin/assets
-      shell: bash
-    - run: mv *.exe bin/assets
-      shell: bash
-    - uses: actions/upload-artifact@v4
-      with:
-        name: windows-latest
-        path: bin/assets
-  build-latest:
-    name: Build with latest Git
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        persist-credentials: false
-        ref: ${{ github.ref }}
-    - uses: actions/setup-go@v5
-      with:
-        go-version: '1.23.x'
-    - run: git clone -b master https://github.com/git/git.git "$HOME/git"
-    - run: |
-        echo "GIT_INSTALL_DIR=$HOME/git" >> "$GITHUB_ENV"
-        echo "$HOME/git/bin" >> "$GITHUB_PATH"
-      if: ${{ matrix.os == 'macos-latest' }}
-      # We install our custom Git version into a PATH location ahead of
-      # that of the Git installed by Homebrew.
-    - run: script/build-git "$HOME/git"
-    - run: GIT_DEFAULT_HASH=sha256 script/cibuild
-  build-earliest:
-    name: Build with earliest Git
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        persist-credentials: false
-        ref: ${{ github.ref }}
-    - uses: actions/setup-go@v5
-      with:
-        go-version: '1.23.x'
-    - run: git clone -b v2.0.0 https://github.com/git/git.git "$HOME/git"
-    - run: |
-        echo "GIT_INSTALL_DIR=$HOME/git" >> "$GITHUB_ENV"
-        echo "$HOME/git/bin" >> "$GITHUB_PATH"
-      if: ${{ matrix.os == 'macos-latest' }}
-      # We install our custom Git version into a PATH location ahead of
-      # that of the Git installed by Homebrew.
-    - run: script/build-git "$HOME/git"
-    - run: script/cibuild
-  build-docker:
-    name: Build Linux packages
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        persist-credentials: false
-        ref: ${{ github.ref }}
-    - run: git clone https://github.com/git-lfs/build-dockers.git "$HOME/build-dockers"
-    - run: (cd "$HOME/build-dockers" && ./build_dockers.bsh)
-    - run: ./docker/run_dockers.bsh --prune
-  build-docker-arm:
-    name: Build Linux ARM packages
-    runs-on: ubuntu-24.04-arm
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        persist-credentials: false
-        ref: ${{ github.ref }}
-    - run: git clone https://github.com/git-lfs/build-dockers.git "$HOME/build-dockers"
-    - run: (cd "$HOME/build-dockers" && ./build_dockers.bsh --arch=arm64 debian_11 debian_12)
-    - run: ./docker/run_dockers.bsh --prune --arch=arm64 debian_11 debian_12

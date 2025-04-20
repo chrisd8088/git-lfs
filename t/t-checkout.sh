@@ -171,6 +171,19 @@ begin_test "checkout: read-only directory"
 (
   set -e
 
+  if [ "$IS_WINDOWS" -eq 1 ]; then
+    # Adapted from: https://stackoverflow.com/a/58846650
+    #               https://stackoverflow.com/a/21295806
+    SFC=$(sfc | tr -d '\0' | grep "SCANNOW")
+    if [ -n "$SFC" ]; then
+      echo "skip: read-only tests require non-administrator user"
+      exit 0
+    fi
+  elif [ "$EUID" -eq 0 ]; then
+    echo "skip: read-only tests require non-root user"
+    exit 0
+  fi
+
   reponame="checkout-read-only"
   git init "$reponame"
   cd "$reponame"
@@ -187,7 +200,12 @@ begin_test "checkout: read-only directory"
 
   rm dir/a.bin
 
-  chmod a-w dir
+  if [ "$IS_WINDOWS" -eq 1 ]; then
+    icacls dir /inheritance:r
+    icacls dir /grant:r Everyone:R
+  else
+    chmod a-w dir
+  fi
   git lfs checkout 2>&1 | tee checkout.log
   # Note that although the checkout command should log an error, at present
   # we still expect a zero exit code.

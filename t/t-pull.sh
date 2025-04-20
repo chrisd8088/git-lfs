@@ -370,6 +370,19 @@ begin_test "pull: read-only directory"
 (
   set -e
 
+  if [ "$IS_WINDOWS" -eq 1 ]; then
+    # Adapted from: https://stackoverflow.com/a/58846650
+    #               https://stackoverflow.com/a/21295806
+    SFC=$(sfc | tr -d '\0' | grep "SCANNOW")
+    if [ -n "$SFC" ]; then
+      echo "skip: read-only tests require non-administrator user"
+      exit 0
+    fi
+  elif [ "$EUID" -eq 0 ]; then
+    echo "skip: read-only tests require non-root user"
+    exit 0
+  fi
+
   reponame="pull-read-only"
   setup_remote_repo "$reponame"
   clone_repo "$reponame" "$reponame"
@@ -391,7 +404,12 @@ begin_test "pull: read-only directory"
   rm dir/a.bin
   delete_local_object "$contents_oid"
 
-  chmod a-w dir
+  if [ "$IS_WINDOWS" -eq 1 ]; then
+    icacls dir /inheritance:r
+    icacls dir /grant:r Everyone:R
+  else
+    chmod a-w dir
+  fi
   git lfs pull 2>&1 | tee pull.log
   # Note that although the pull command should log an error, at present
   # we still expect a zero exit code.

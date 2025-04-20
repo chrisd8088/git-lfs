@@ -182,6 +182,14 @@ func NewRepo(callback RepoCallback) *Repo {
 	})
 }
 
+// NewBareRepo creates a new bare git repo in a new temp dir
+// Note that the repository's path does not end in ".git".
+func NewBareRepo(callback RepoCallback) *Repo {
+	return newRepo(callback, &RepoCreateSettings{
+		RepoType: RepoTypeBare,
+	})
+}
+
 // newRepo creates a new git repo in a new temp dir with more control over settings
 func newRepo(callback RepoCallback, settings *RepoCreateSettings) *Repo {
 	ret := &Repo{
@@ -508,6 +516,13 @@ type RefsByName []*git.Ref
 func (a RefsByName) Len() int           { return len(a) }
 func (a RefsByName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a RefsByName) Less(i, j int) bool { return a[i].Name < a[j].Name }
+
+// WorktreesByName implements sort.Interface for []*git.Worktree based on dir
+type WorktreesByName []*git.Worktree
+
+func (a WorktreesByName) Len() int           { return len(a) }
+func (a WorktreesByName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a WorktreesByName) Less(i, j int) bool { return a[i].Dir < a[j].Dir }
 
 // WrappedPointersByOid implements sort.Interface for []*lfs.WrappedPointer based on oid
 type WrappedPointersByOid []*lfs.WrappedPointer

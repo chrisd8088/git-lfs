@@ -8,24 +8,22 @@ env:
 jobs:
   build-windows:
     name: Build Windows Assets
+    environment: production
     runs-on: windows-latest
     strategy:
       matrix:
-        go: ['1.21.x']
+        go: ['1.24.x']
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - run: git fetch origin "+${GITHUB_REF}:${GITHUB_REF}"
-      shell: bash
-      # We update the current tag as the checkout step turns annotated tags
-      # into lightweight ones by accident, breaking "git describe".
-      # See https://github.com/actions/checkout/issues/882 for details.
-    - uses: ruby/setup-ruby@v1
+        persist-credentials: false
+        ref: ${{ github.ref }}
+      # We specify the current ref because otherwise the checkout turns
+      # annotated tags into lightweight ones, breaking "git describe".
+      # See https://github.com/actions/checkout/issues/290 and
+      # https://github.com/actions/checkout/issues/882 for details.
     - run: gem install asciidoctor
-    - run: Rename-Item -Path C:\msys64 -NewName msys64-tmp -Force
-      # We move the MSYS2 installed for Ruby aside to prevent use of its Git,
-      # which does not honour the PATH we set to our built git-lfs binary.
     - uses: actions/setup-go@v5
       with:
         go-version: ${{ matrix.go }}
@@ -33,37 +31,64 @@ jobs:
       shell: bash
     - run: set GOPATH=%HOME%\go
     - run: choco install -y InnoSetup
-    - run: choco install -y strawberryperl
     - run: choco install -y zip
     - run: choco install -y jq
     - run: GOPATH="$HOME/go" PATH="$HOME/go/bin:$PATH" go install github.com/josephspurrier/goversioninfo/cmd/goversioninfo@latest
       shell: bash
+    - uses: git-for-windows/setup-git-for-windows-sdk@v1
+      with:
+        flavor: minimal
+      # We install the SDK so as to have access to the msgfmt.exe binary
+      # from the GNU gettext package.
     - run: mkdir -p bin/releases
       shell: bash
-    - run: CERT_FILE="$HOME/cert.pfx" env -u TMPDIR make release-write-certificate
-      shell: bash
-      env:
-        CERT_CONTENTS: ${{secrets.WINDOWS_CERT_BASE64}}
-      # We clear the TMPDIR set for Ruby so mktemp and Go use the same
-      # volume for temporary files.
-    - run: PATH="$HOME/go/bin:$PATH" GOARCH=amd64 go generate && env -u TMPDIR make bin/releases/git-lfs-windows-amd64-$(git describe).zip
+    - run: PATH="$HOME/go/bin:$PATH" GOARCH=amd64 go generate && make bin/releases/git-lfs-windows-amd64-$(git describe).zip
       shell: bash
       env:
         FORCE_LOCALIZE: true
-    - run: PATH="$HOME/go/bin:$PATH" GOARCH=386 go generate && env -u TMPDIR make bin/releases/git-lfs-windows-386-$(git describe).zip
+    - run: PATH="$HOME/go/bin:$PATH" GOARCH=386 go generate && make bin/releases/git-lfs-windows-386-$(git describe).zip
       shell: bash
       env:
         FORCE_LOCALIZE: true
-    - run: PATH="$HOME/go/bin:$PATH" GOARCH=arm64 go generate && env -u TMPDIR make bin/releases/git-lfs-windows-arm64-$(git describe).zip
+    - run: PATH="$HOME/go/bin:$PATH" GOARCH=arm64 go generate && make bin/releases/git-lfs-windows-arm64-$(git describe).zip
       shell: bash
       env:
         FORCE_LOCALIZE: true
-    - run: PATH="$HOME/go/bin:/c/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86:$PATH" CERT_FILE="$HOME/cert.pfx" env -u TMPDIR make release-windows
+    - run: make release-windows-stage-1
       shell: bash
       env:
-        CERT_PASS: ${{secrets.WINDOWS_CERT_PASS}}
         FORCE_LOCALIZE: true
-    - run: env -u TMPDIR make release-windows-rebuild
+    - uses: azure/trusted-signing-action@v0.5.1
+      with:
+        azure-tenant-id: ${{ secrets.SPN_GIT_LFS_SIGNING_TENANT_ID }}
+        azure-client-id: ${{ secrets.SPN_GIT_LFS_SIGNING_CLIENT_ID }}
+        azure-client-secret: ${{ secrets.SPN_GIT_LFS_SIGNING }}
+        endpoint: https://wus.codesigning.azure.net/
+        trusted-signing-account-name: GitHubInc
+        certificate-profile-name: GitHubInc
+        files-folder: ${{ github.workspace }}/tmp/stage1
+        files-folder-filter: exe
+        file-digest: SHA256
+        timestamp-rfc3161: http://timestamp.acs.microsoft.com
+        timestamp-digest: SHA256
+    - run: make release-windows-stage-2
+      shell: bash
+    - uses: azure/trusted-signing-action@v0.5.1
+      with:
+        azure-tenant-id: ${{ secrets.SPN_GIT_LFS_SIGNING_TENANT_ID }}
+        azure-client-id: ${{ secrets.SPN_GIT_LFS_SIGNING_CLIENT_ID }}
+        azure-client-secret: ${{ secrets.SPN_GIT_LFS_SIGNING }}
+        endpoint: https://wus.codesigning.azure.net/
+        trusted-signing-account-name: GitHubInc
+        certificate-profile-name: GitHubInc
+        files-folder: ${{ github.workspace }}/tmp/stage2
+        files-folder-filter: exe
+        file-digest: SHA256
+        timestamp-rfc3161: http://timestamp.acs.microsoft.com
+        timestamp-digest: SHA256
+    - run: make release-windows-stage-3
+      shell: bash
+    - run: make release-windows-rebuild
       shell: bash
     - uses: actions/upload-artifact@v4
       with:
@@ -71,36 +96,35 @@ jobs:
         path: bin/releases
   build-macos:
     name: Build macOS Assets
+    environment: production
     runs-on: macos-latest
     strategy:
       matrix:
-        go: ['1.21.x']
+        go: ['1.24.x']
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - run: git fetch origin "+${GITHUB_REF}:${GITHUB_REF}"
-    - uses: ruby/setup-ruby@v1
+        persist-credentials: false
+        ref: ${{ github.ref }}
     - run: gem install asciidoctor
     - uses: actions/setup-go@v5
       with:
         go-version: ${{ matrix.go }}
-    - run: brew install gettext
     - run: make release
       env:
           FORCE_LOCALIZE: true
     - run: CERT_FILE="$HOME/cert.p12" make release-write-certificate
       env:
-        CERT_CONTENTS: ${{secrets.MACOS_CERT_BASE64}}
+        CERT_CONTENTS: ${{secrets.GATEWATCHER_DEVELOPER_ID_CERT}}
     - run: CERT_FILE="$HOME/cert.p12" make release-import-certificate
       env:
-        CERT_PASS: ${{secrets.MACOS_CERT_PASS}}
+        CERT_PASS: ${{secrets.GATEWATCHER_DEVELOPER_ID_PASSWORD}}
     - run: make release-darwin
       env:
         DARWIN_DEV_USER: ${{secrets.MACOS_DEV_USER}}
         DARWIN_DEV_PASS: ${{secrets.MACOS_DEV_PASS}}
         DARWIN_DEV_TEAM: ${{secrets.MACOS_DEV_TEAM}}
-        DARWIN_CERT_ID: ${{secrets.MACOS_CERT_ID}}
     - uses: actions/upload-artifact@v4
       with:
         name: macos-assets
@@ -113,14 +137,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go: ['1.21.x']
+        go: ['1.24.x']
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - run: git fetch origin "+${GITHUB_REF}:${GITHUB_REF}"
-    - uses: ruby/setup-ruby@v1
-    - run: gem install asciidoctor
+        persist-credentials: false
+        ref: ${{ github.ref }}
+    - run: sudo gem install asciidoctor
     - uses: actions/setup-go@v5
       with:
         go-version: ${{ matrix.go }}
@@ -139,19 +163,24 @@ jobs:
     - run: rm -f bin/releases/*windows* bin/releases/*darwin*
     - run: 'find windows-assets -name "*windows*" -type f | xargs -I{} mv {} bin/releases'
     - run: 'find macos-assets -name "*darwin*" -type f | xargs -I{} mv {} bin/releases'
-    - run: script/upload --skip-verify $(git describe)
-      env:
-        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+    - run: rm -f bin/releases/git-lfs-windows-assets*.tar.gz
+    - run: mkdir -p release-assets/bin
+    - run: mv bin/releases release-assets/bin
+    - uses: actions/upload-artifact@v4
+      with:
+        name: release-assets
+        path: release-assets
   build-docker:
     name: Build Linux Packages
+    environment: production
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - run: git fetch origin "+${GITHUB_REF}:${GITHUB_REF}"
-    - uses: ruby/setup-ruby@v1
-    - run: gem install packagecloud-ruby
+        persist-credentials: false
+        ref: ${{ github.ref }}
+    - run: sudo gem install packagecloud-ruby
     - run: git clone https://github.com/git-lfs/build-dockers.git "$HOME/build-dockers"
     - run: (cd "$HOME/build-dockers" && ./build_dockers.bsh)
     - run: ./docker/run_dockers.bsh --prune
@@ -159,34 +188,19 @@ jobs:
     - run: '[ -z "${GITHUB_REF%%refs/tags/*-pre*}" ] || ./script/packagecloud.rb'
       env:
         PACKAGECLOUD_TOKEN: ${{secrets.PACKAGECLOUD_TOKEN}}
-  build-docker-cross:
-    name: Build Cross Linux packages
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        arch: [arm64]
-        container: [debian_12]
+  build-docker-arm:
+    name: Build Linux ARM packages
+    runs-on: ubuntu-24.04-arm
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - run: git fetch origin "+${GITHUB_REF}:${GITHUB_REF}"
-    - uses: ruby/setup-ruby@v1
-    - run: gem install packagecloud-ruby
-    - run: |
-        echo '{"experimental": true}' | sudo tee /etc/docker/daemon.json
-        sudo systemctl restart docker.service
-        docker version -f '{{.Server.Experimental}}'
-    - uses: docker/setup-qemu-action@v3
+        persist-credentials: false
+        ref: ${{ github.ref }}
+    - run: sudo gem install packagecloud-ruby
     - run: git clone https://github.com/git-lfs/build-dockers.git "$HOME/build-dockers"
-    - run: (cd "$HOME/build-dockers" && ./build_dockers.bsh --arch=$ARCH $CONTAINER)
-      env:
-        ARCH: ${{matrix.arch}}
-        CONTAINER: ${{matrix.container}}
-    - run: ./docker/run_dockers.bsh --prune --arch=$ARCH $CONTAINER
-      env:
-        ARCH: ${{matrix.arch}}
-        CONTAINER: ${{matrix.container}}
+    - run: (cd "$HOME/build-dockers" && ./build_dockers.bsh --arch=arm64 debian_11 debian_12)
+    - run: ./docker/run_dockers.bsh --prune --arch=arm64 debian_11 debian_12
     # If this is a pre-release tag, don't upload anything to packagecloud.
     - run: '[ -z "${GITHUB_REF%%refs/tags/*-pre*}" ] || ./script/packagecloud.rb'
       env:

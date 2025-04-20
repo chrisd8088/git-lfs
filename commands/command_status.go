@@ -171,12 +171,12 @@ func blobInfo(s *lfs.PointerScanner, blobSha, name string) (sha, from string, er
 }
 
 func scanIndex(ref string) (staged, unstaged []*lfs.DiffIndexEntry, err error) {
-	uncached, err := lfs.NewDiffIndexScanner(ref, false, true)
+	uncached, err := lfs.NewDiffIndexScanner(ref, false, true, "")
 	if err != nil {
 		return nil, nil, err
 	}
 
-	cached, err := lfs.NewDiffIndexScanner(ref, true, false)
+	cached, err := lfs.NewDiffIndexScanner(ref, true, false, "")
 	if err != nil {
 		return nil, nil, err
 	}
@@ -367,7 +367,7 @@ func relativize(from, to string) string {
 
 func init() {
 	RegisterCommand("status", statusCommand, func(cmd *cobra.Command) {
-		cmd.Flags().BoolVarP(&porcelain, "porcelain", "p", false, "Give the output in an easy-to-parse format for scripts.")
-		cmd.Flags().BoolVarP(&statusJson, "json", "j", false, "Give the output in a stable json format for scripts.")
+		cmd.Flags().BoolVarP(&porcelain, "porcelain", "p", false, "Give the output in an easy-to-parse format for scripts")
+		cmd.Flags().BoolVarP(&statusJson, "json", "j", false, "Give the output in a stable JSON format for scripts")
 	})
 }

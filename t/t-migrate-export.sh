@@ -10,7 +10,7 @@ begin_test "migrate export (default branch)"
   setup_multiple_local_branches_tracked
 
   # Add b.md, a pointer existing only on main
-  base64 < /dev/urandom | head -c 160 > b.md
+  lfstest-genrandom --base64 160 >b.md
   git add b.md
   git commit -m "add b.md"
 
@@ -52,8 +52,9 @@ begin_test "migrate export (default branch)"
   echo "$main_attrs" | grep -q "*.md !text !filter !merge !diff"
   echo "$main_attrs" | grep -q "*.txt !text !filter !merge !diff"
 
-  [ ! $(echo "$feature_attrs" | grep -q "*.md !text !filter !merge !diff") ]
-  [ ! $(echo "$feature_attrs" | grep -q "*.txt !text !filter !merge !diff") ]
+  echo "$feature_attrs" | grep -q "*.md !text !filter !merge !diff" && exit 1
+  echo "$feature_attrs" | grep -q "*.txt !text !filter !merge !diff" && exit 1
+  true
 )
 end_test
 
@@ -253,8 +254,9 @@ begin_test "migrate export (exclude remote refs)"
   echo "$main_attrs" | grep -q "*.md !text !filter !merge !diff"
   echo "$main_attrs" | grep -q "*.txt !text !filter !merge !diff"
 
-  [ ! $(echo "$remote_attrs" | grep -q "*.md !text !filter !merge !diff") ]
-  [ ! $(echo "$remote_attrs" | grep -q "*.txt !text !filter !merge !diff") ]
+  echo "$remote_attrs" | grep -q "*.md !text !filter !merge !diff" && exit 1
+  echo "$remote_attrs" | grep -q "*.txt !text !filter !merge !diff" && exit 1
+  true
 )
 end_test
 
@@ -361,9 +363,20 @@ begin_test "migrate export (include/exclude ref)"
   remote_attrs="$(git cat-file -p "$remote:.gitattributes")"
   feature_attrs="$(git cat-file -p "$feature:.gitattributes")"
 
-  [ ! $(echo "$main_attrs" | grep -q "*.txt !text !filter !merge !diff") ]
-  [ ! $(echo "$remote_attrs" | grep -q "*.txt !text !filter !merge !diff") ]
+  echo "$main_attrs" | grep -q "*.txt !text !filter !merge !diff" && exit 1
+  echo "$remote_attrs" | grep -q "*.txt !text !filter !merge !diff" && exit 1
   echo "$feature_attrs" | grep -q "*.txt !text !filter !merge !diff"
+)
+end_test
+
+begin_test "migrate export (invalid ref)"
+(
+  set -e
+  remove_and_create_local_repo "migrate-export-invalid-ref"
+  git commit --allow-empty -m "initial commit"
+
+  git lfs migrate export --yes --include="*" jibberish >migrate.log 2>&1 && exit 1
+  grep "can't resolve ref" migrate.log
 )
 end_test
 
@@ -425,7 +438,7 @@ begin_test "migrate export (.gitattributes symlink)"
     exit 1
   fi
 
-  grep "migrate: expected '.gitattributes' to be a file, got a symbolic link" migrate.log
+  grep "expected '.gitattributes' to be a file, got a symbolic link" migrate.log
 
   main="$(git rev-parse refs/heads/main)"
 
@@ -444,7 +457,8 @@ begin_test "migrate export (--object-map)"
 
   setup_multiple_local_branches_tracked
 
-  output_dir=$(mktemp -d)
+  output_dir="$GIT_LFS_TEST_DIR/export-object-map-$(lfstest-genrandom --base64url 32)"
+  mkdir -p "$output_dir"
 
   git log --all --pretty='format:%H' > "${output_dir}/old_sha.txt"
   git lfs migrate export --everything --include="*" --object-map "${output_dir}/object-map.txt"
@@ -461,7 +475,10 @@ begin_test "migrate export (--verbose)"
 
   setup_multiple_local_branches_tracked
 
-  git lfs migrate export --everything --include="*" --verbose 2>&1 | grep -q "migrate: commit "
+  original_head="$(git rev-parse HEAD)"
+
+  git lfs migrate export --everything --include="*" --verbose --yes 2>&1 | tee migrate.log
+  grep -q "  commit ${original_head}: a\.md" migrate.log
 )
 end_test
 

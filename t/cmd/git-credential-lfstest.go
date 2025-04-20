@@ -5,9 +5,11 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 )
 
@@ -21,6 +23,43 @@ var (
 	delim    = '\n'
 	credsDir = ""
 )
+
+type credential struct {
+	authtype   string
+	username   string
+	password   string
+	credential string
+	matchState string
+	state      string
+	multistage bool
+	skip       bool
+}
+
+func (c *credential) Serialize(capabilities map[string]struct{}, state []string, username []string) map[string][]string {
+	formattedState := fmt.Sprintf("lfstest:%s", c.state)
+	formattedMatchState := fmt.Sprintf("lfstest:%s", c.matchState)
+	creds := make(map[string][]string)
+	if c.skip {
+		// Do nothing.
+	} else if _, ok := capabilities["authtype"]; ok && len(c.authtype) != 0 && len(c.credential) != 0 {
+		if _, ok := capabilities["state"]; len(c.matchState) == 0 || (ok && slices.Contains(state, formattedMatchState)) {
+			creds["authtype"] = []string{c.authtype}
+			creds["credential"] = []string{c.credential}
+			if ok {
+				creds["state[]"] = []string{formattedState}
+				if c.multistage {
+					creds["continue"] = []string{"1"}
+				}
+			}
+		}
+	} else if len(c.authtype) == 0 && (len(username) == 0 || username[0] == c.username) {
+		if len(username) == 0 {
+			creds["username"] = []string{c.username}
+		}
+		creds["password"] = []string{c.password}
+	}
+	return creds
+}
 
 func init() {
 	if len(credsDir) == 0 {
@@ -70,19 +109,18 @@ func fill() {
 	}
 
 	hostPieces := strings.SplitN(firstEntryForKey(creds, "host"), ":", 2)
-	user, pass, err := credsForHostAndPath(hostPieces[0], firstEntryForKey(creds, "path"))
+	credentials, err := credsForHostAndPath(hostPieces[0], firstEntryForKey(creds, "path"))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)
 	}
 
-	if user != "skip" {
-		if _, ok := creds["username"]; !ok {
-			creds["username"] = []string{user}
-		}
-
-		if _, ok := creds["password"]; !ok {
-			creds["password"] = []string{pass}
+	result := map[string][]string{}
+	capas := discoverCapabilities(creds)
+	for _, cred := range credentials {
+		result = cred.Serialize(capas, creds["state[]"], creds["username"])
+		if len(result) != 0 {
+			break
 		}
 	}
 
@@ -95,9 +133,19 @@ func fill() {
 		fmt.Fprintf(os.Stderr, "Unexpected 'wwwauth[]' key in credentials\n")
 		os.Exit(1)
 	}
-	delete(creds, "wwwauth[]")
 
-	for key, value := range creds {
+	if len(result) == 0 {
+		os.Exit(0)
+	}
+
+	// Send capabilities first to all for one-pass parsing, but only if
+	// client advertised capabilities matching those of the per-host data.
+	key := "capability[]"
+	for entry, _ := range capas {
+		fmt.Fprintf(os.Stderr, "CREDS SEND: %s=%s\n", key, entry)
+		fmt.Fprintf(os.Stdout, "%s=%s\n", key, entry)
+	}
+	for key, value := range result {
 		for _, entry := range value {
 			fmt.Fprintf(os.Stderr, "CREDS SEND: %s=%s\n", key, entry)
 			fmt.Fprintf(os.Stdout, "%s=%s\n", key, entry)
@@ -105,40 +153,101 @@ func fill() {
 	}
 }
 
-func credsForHostAndPath(host, path string) (string, string, error) {
-	var hostFilename string
-
-	// We need hostFilename to end in a slash so that our credentials all
-	// end up in the same directory.  credsDir will come in from the
-	// testsuite with a slash, but filepath.Join will strip it off if host
-	// is empty, such as when we have a file:/// or cert:/// URL.
-	if host != "" {
-		hostFilename = filepath.Join(credsDir, host)
-	} else {
-		hostFilename = credsDir
+func discoverCapabilities(creds map[string][]string) map[string]struct{} {
+	capas := make(map[string]struct{})
+	supportedCapas := map[string]struct{}{
+		"authtype": struct{}{},
+		"state":    struct{}{},
 	}
+	for _, capa := range creds["capability[]"] {
+		// Only pass on capabilities we support.
+		if _, ok := supportedCapas[capa]; ok {
+			capas[capa] = struct{}{}
+		}
+	}
+	return capas
+}
 
+func credsForHostAndPath(host, path string) ([]credential, error) {
 	if len(path) > 0 {
-		pathFilename := fmt.Sprintf("%s--%s", hostFilename, strings.Replace(path, "/", "-", -1))
-		u, p, err := credsFromFilename(pathFilename)
+		pathFilename := fmt.Sprintf("%s--%s", host, strings.Replace(path, "/", "-", -1))
+		cred, err := credsFromFilename(filepath.Join(credsDir, pathFilename))
 		if err == nil {
-			return u, p, err
+			return cred, err
+		}
+
+		// Ideally we might run cygpath to convert paths like D:/...
+		// to /d/... paths, but we only need to do this to support
+		// one test of the deprecated git-lfs-clone command in our
+		// CI suite, so for simplicity we just do basic rewriting.
+		if len(path) > 2 && path[0] >= 'A' && path[0] <= 'Z' && path[1] == ':' {
+			path = "/" + strings.ToLower(string(path[0])) + path[2:]
+			pathFilename := fmt.Sprintf("%s--%s", host, strings.Replace(path, "/", "-", -1))
+			cred, err := credsFromFilename(filepath.Join(credsDir, pathFilename))
+			if err == nil {
+				return cred, err
+			}
 		}
 	}
 
-	return credsFromFilename(hostFilename)
+	if len(host) == 0 {
+		return nil, errors.New("No file available; empty 'host' key in credentials")
+	}
+
+	return credsFromFilename(filepath.Join(credsDir, host))
 }
 
-func credsFromFilename(file string) (string, string, error) {
-	userPass, err := os.ReadFile(file)
+func parseOneCredential(s, file string) (credential, error) {
+	// Each line in a file is of the following form:
+	//
+	// skip::
+	//	The literal word "skip" means to skip emitting credentials.
+	// AUTHTYPE::CREDENTIAL
+	//	If the authtype is not empty, then this is an authtype and
+	//	credential.
+	// AUTHTYPE::CREDENTIAL:MATCH:STATE:MULTISTAGE
+	//	Like above, but this matches only if MATCH is empty or if the
+	//	state[] entry is present and matches "lfstest:MATCH".  If so,
+	//	the value "lfstest:STATE" is emitted as the new state[] entry.
+	//	If MULTISTAGE is set to "true", then the multistage flag is set.
+	// :USERNAME:PASSWORD
+	//	This is a normal username and password.
+	credsPieces := strings.Split(strings.TrimSpace(s), ":")
+	if len(credsPieces) != 3 && len(credsPieces) != 6 {
+		return credential{}, fmt.Errorf("Invalid data %q while reading %q", string(s), file)
+	}
+	if credsPieces[0] == "skip" {
+		return credential{skip: true}, nil
+	} else if len(credsPieces[0]) == 0 {
+		return credential{username: credsPieces[1], password: credsPieces[2]}, nil
+	} else if len(credsPieces) == 3 {
+		return credential{authtype: credsPieces[0], credential: credsPieces[2]}, nil
+	} else {
+		return credential{
+			authtype:   credsPieces[0],
+			credential: credsPieces[2],
+			matchState: credsPieces[3],
+			state:      credsPieces[4],
+			multistage: credsPieces[5] == "true",
+		}, nil
+	}
+}
+
+func credsFromFilename(file string) ([]credential, error) {
+	fileContents, err := os.ReadFile(file)
 	if err != nil {
-		return "", "", fmt.Errorf("Error opening %q: %s", file, err)
+		return nil, fmt.Errorf("Error opening %q: %s", file, err)
 	}
-	credsPieces := strings.SplitN(strings.TrimSpace(string(userPass)), ":", 2)
-	if len(credsPieces) != 2 {
-		return "", "", fmt.Errorf("Invalid data %q while reading %q", string(userPass), file)
+	lines := strings.Split(strings.TrimSpace(string(fileContents)), "\n")
+	creds := make([]credential, 0, len(lines))
+	for _, line := range lines {
+		cred, err := parseOneCredential(line, file)
+		if err != nil {
+			return nil, err
+		}
+		creds = append(creds, cred)
 	}
-	return credsPieces[0], credsPieces[1], nil
+	return creds, nil
 }
 
 func log() {

@@ -109,7 +109,7 @@ begin_test "migrate import (--fixup with remote tags)"
 
   git lfs uninstall
 
-  base64 < /dev/urandom | head -c 120 > b.txt
+  lfstest-genrandom --base64 120 >b.txt
   git add b.txt
   git commit -m "b.txt"
 
@@ -142,7 +142,7 @@ begin_test "migrate import (--fixup, .gitattributes symlink)"
     exit 1
   fi
 
-  grep "migrate: expected '.gitattributes' to be a file, got a symbolic link" migrate.log
+  grep "expected '.gitattributes' to be a file, got a symbolic link" migrate.log
 
   main="$(git rev-parse refs/heads/main)"
 
@@ -220,7 +220,7 @@ begin_test "migrate import (no potential fixup, --fixup, .gitattributes with mac
   setup_multiple_local_branches
 
   echo "[attr]foo foo" >.gitattributes
-  base64 < /dev/urandom | head -c 30 > a.md
+  lfstest-genrandom --base64 30 >a.md
   git add .gitattributes a.md
   git commit -m macro
 

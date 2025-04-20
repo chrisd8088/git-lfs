@@ -39,6 +39,14 @@ This does not update the working copy.
 `-p`::
   Prune old and unreferenced objects after fetching, equivalent to running `git
   lfs prune` afterwards. See git-lfs-prune(1) for more details.
+`--refetch`::
+  Also fetch objects that are already present locally.
+`--dry-run`::
+`-d`::
+  Print what would be fetched, without actually fetching anything.
+`--json`::
+`-j`::
+  Give the output in a stable JSON format for scripts.
 
 == INCLUDE AND EXCLUDE
 

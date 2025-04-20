@@ -9,6 +9,7 @@ import (
 
 	. "github.com/git-lfs/git-lfs/v3/git"
 	test "github.com/git-lfs/git-lfs/v3/t/cmd/util"
+	"github.com/git-lfs/git-lfs/v3/tools"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -331,7 +332,7 @@ func TestResolveEmptyCurrentRef(t *testing.T) {
 	assert.NotEqual(t, nil, err)
 }
 
-func TestWorkTrees(t *testing.T) {
+func TestWorktrees(t *testing.T) {
 	// Only git 2.5+
 	if !IsGitVersionAtLeast("2.5.0") {
 		return
@@ -344,32 +345,47 @@ func TestWorkTrees(t *testing.T) {
 		repo.Cleanup()
 	}()
 
+	repoDir, _ := tools.CanonicalizePath(repo.Path, true)
+
 	// test commits; we'll just modify the same file each time since we're
 	// only interested in branches & dates
 	inputs := []*test.CommitInput{
 		{ // 0
 			Files: []*test.FileInput{
+				{Filename: "file1.txt", Size: 10},
+			},
+			Tags: []string{"tag1"},
+		},
+		{ // 1
+			Files: []*test.FileInput{
 				{Filename: "file1.txt", Size: 20},
 			},
 		},
-		{ // 1
+		{ // 2
 			NewBranch: "branch2",
 			Files: []*test.FileInput{
 				{Filename: "file1.txt", Size: 25},
 			},
 		},
-		{ // 2
+		{ // 3
 			NewBranch:      "branch3",
 			ParentBranches: []string{"master"}, // back on master
 			Files: []*test.FileInput{
 				{Filename: "file1.txt", Size: 30},
 			},
 		},
-		{ // 3
+		{ // 4
 			NewBranch:      "branch4",
 			ParentBranches: []string{"master"}, // back on master
 			Files: []*test.FileInput{
 				{Filename: "file1.txt", Size: 40},
+			},
+		},
+		{ // 5
+			NewBranch:      "branch5",
+			ParentBranches: []string{"master"}, // back on master
+			Files: []*test.FileInput{
+				{Filename: "file1.txt", Size: 50},
 			},
 		},
 	}
@@ -380,32 +396,84 @@ func TestWorkTrees(t *testing.T) {
 	// We can create worktrees as subfolders for convenience
 	// Each one is checked out to a different branch
 	// Note that we *won't* create one for branch3
+	test.RunGitCommand(t, true, "worktree", "add", "tag1_wt", "tag1")
 	test.RunGitCommand(t, true, "worktree", "add", "branch2_wt", "branch2")
 	test.RunGitCommand(t, true, "worktree", "add", "branch4_wt", "branch4")
+	test.RunGitCommand(t, true, "worktree", "add", "branch5_wt", "branch5")
 
-	refs, err := GetAllWorkTreeHEADs(filepath.Join(repo.Path, ".git"))
-	assert.Equal(t, nil, err)
-	expectedRefs := []*Ref{
+	os.RemoveAll(filepath.Join(repoDir, "branch5_wt"))
+
+	worktrees, err := GetAllWorktrees(filepath.Join(repo.Path, ".git"))
+	assert.NoError(t, err)
+	expectedWorktrees := []*Worktree{
 		{
-			Name: "master",
-			Type: RefTypeLocalBranch,
-			Sha:  outputs[0].Sha,
+			Ref: Ref{
+				Name: outputs[0].Sha,
+				Type: RefTypeOther,
+				Sha:  outputs[0].Sha,
+			},
+			Dir:      filepath.Join(repoDir, "tag1_wt"),
+			Prunable: false,
 		},
 		{
-			Name: "branch2",
-			Type: RefTypeLocalBranch,
-			Sha:  outputs[1].Sha,
+			Ref: Ref{
+				Name: "master",
+				Type: RefTypeLocalBranch,
+				Sha:  outputs[1].Sha,
+			},
+			Dir:      repoDir,
+			Prunable: false,
 		},
 		{
-			Name: "branch4",
-			Type: RefTypeLocalBranch,
-			Sha:  outputs[3].Sha,
+			Ref: Ref{
+				Name: "branch2",
+				Type: RefTypeLocalBranch,
+				Sha:  outputs[2].Sha,
+			},
+			Dir:      filepath.Join(repoDir, "branch2_wt"),
+			Prunable: false,
+		},
+		{
+			Ref: Ref{
+				Name: "branch4",
+				Type: RefTypeLocalBranch,
+				Sha:  outputs[4].Sha,
+			},
+			Dir:      filepath.Join(repoDir, "branch4_wt"),
+			Prunable: false,
+		},
+		{
+			Ref: Ref{
+				Name: "branch5",
+				Type: RefTypeLocalBranch,
+				Sha:  outputs[5].Sha,
+			},
+			Dir:      filepath.Join(repoDir, "branch5_wt"),
+			Prunable: true,
 		},
 	}
 	// Need to sort for consistent comparison
-	sort.Sort(test.RefsByName(expectedRefs))
-	sort.Sort(test.RefsByName(refs))
-	assert.Equal(t, expectedRefs, refs, "Refs should be correct")
+	sort.Sort(test.WorktreesByName(expectedWorktrees))
+	sort.Sort(test.WorktreesByName(worktrees))
+	assert.Equal(t, expectedWorktrees, worktrees, "Worktrees should be correct")
+}
+
+func TestWorktreesBareRepo(t *testing.T) {
+	// Only git 2.5+
+	if !IsGitVersionAtLeast("2.5.0") {
+		return
+	}
+
+	repo := test.NewBareRepo(t)
+	repo.Pushd()
+	defer func() {
+		repo.Popd()
+		repo.Cleanup()
+	}()
+
+	worktrees, err := GetAllWorktrees(repo.Path)
+	assert.NoError(t, err)
+	assert.Nil(t, worktrees)
 }
 
 func TestVersionCompare(t *testing.T) {

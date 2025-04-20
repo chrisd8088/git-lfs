@@ -7,16 +7,18 @@ envInitConfig='git config filter.lfs.process = "git-lfs filter-process"
 git config filter.lfs.smudge = "git-lfs smudge -- %f"
 git config filter.lfs.clean = "git-lfs clean -- %f"'
 
-unset_vars () {
-    # If set, these will cause the test to fail.
-    unset GIT_LFS_NO_TEST_COUNT GIT_LFS_LOCK_ACQUIRE_DISABLED
-}
+if [ "$IS_WINDOWS" -eq 1 ]; then
+  export MSYS2_ENV_CONV_EXCL="GIT_LFS_TEST_DIR"
+fi
+
+# The "git lfs env" command should ignore this environment variable
+# despite the "GIT_" strings in its name and value.
+export TEST_GIT_EXAMPLE="GIT_EXAMPLE"
 
 begin_test "git worktree"
 (
     set -e
     reponame="worktree-main"
-    unset_vars
     mkdir $reponame
     cd $reponame
     git init
@@ -43,6 +45,7 @@ FetchRecentCommitsDays=0
 FetchRecentRefsIncludeRemotes=true
 PruneOffsetDays=3
 PruneVerifyRemoteAlways=false
+PruneVerifyUnreachableAlways=false
 PruneRemoteName=origin
 LfsStorageDir=$(canonical_path_escaped "$TRASHDIR/$reponame/.git/lfs")
 AccessDownload=none
@@ -79,6 +82,7 @@ FetchRecentCommitsDays=0
 FetchRecentRefsIncludeRemotes=true
 PruneOffsetDays=3
 PruneVerifyRemoteAlways=false
+PruneVerifyUnreachableAlways=false
 PruneRemoteName=origin
 LfsStorageDir=$(canonical_path_escaped "$TRASHDIR/$reponame/.git/lfs")
 AccessDownload=none
@@ -97,7 +101,6 @@ begin_test "git worktree with hooks"
 (
     set -e
     reponame="worktree-hooks"
-    unset_vars
     mkdir $reponame
     cd $reponame
     git init

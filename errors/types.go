@@ -205,7 +205,6 @@ func IsRetriableLaterError(err error) (time.Time, bool) {
 
 type errorWithCause interface {
 	Cause() error
-	StackTrace() errors.StackTrace
 	error
 	fmt.Formatter
 }
@@ -386,7 +385,7 @@ func (e badPointerKeyError) BadPointerKeyError() bool {
 }
 
 func NewBadPointerKeyError(expected, actual string) error {
-	err := Errorf(tr.Tr.Get("Expected key %s, got %s", expected, actual))
+	err := New(tr.Tr.Get("Expected key %s, got %s", expected, actual))
 	return badPointerKeyError{expected, actual, newWrappedError(err, tr.Tr.Get("pointer parsing"))}
 }
 
@@ -412,19 +411,23 @@ type retriableLaterError struct {
 }
 
 func NewRetriableLaterError(err error, header string) error {
-	secs, err := strconv.Atoi(header)
-	if err == nil {
+	if header == "" {
+		return nil
+	}
+
+	secs, parseErr := strconv.Atoi(header)
+	if parseErr == nil {
 		return retriableLaterError{
 			wrappedError:  newWrappedError(err, ""),
 			timeAvailable: time.Now().Add(time.Duration(secs) * time.Second),
 		}
 	}
 
-	time, err := time.Parse(time.RFC1123, header)
-	if err == nil {
+	parseTime, parseErr := time.Parse(time.RFC1123, header)
+	if parseErr == nil {
 		return retriableLaterError{
 			wrappedError:  newWrappedError(err, ""),
-			timeAvailable: time,
+			timeAvailable: parseTime,
 		}
 	}
 

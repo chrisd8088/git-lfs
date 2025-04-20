@@ -33,6 +33,7 @@ func (a *basicDownloadAdapter) tempDir() string {
 func (a *basicDownloadAdapter) WorkerStarting(workerNum int) (interface{}, error) {
 	return nil, nil
 }
+
 func (a *basicDownloadAdapter) WorkerEnding(workerNum int, ctx interface{}) {
 }
 
@@ -117,7 +118,7 @@ func (a *basicDownloadAdapter) download(t *Transfer, cb ProgressCallback, authOk
 		return err
 	}
 	if rel == nil {
-		return errors.Errorf(tr.Tr.Get("Object %s not found on the server.", t.Oid))
+		return errors.New(tr.Tr.Get("Object %s not found on the server.", t.Oid))
 	}
 
 	req, err := a.newHTTPRequest("GET", rel)
@@ -153,7 +154,7 @@ func (a *basicDownloadAdapter) download(t *Transfer, cb ProgressCallback, authOk
 
 		// Special-cae status code 429 - retry after certain time
 		if res.StatusCode == 429 {
-			retLaterErr := errors.NewRetriableLaterError(err, res.Header["Retry-After"][0])
+			retLaterErr := errors.NewRetriableLaterError(err, res.Header.Get("Retry-After"))
 			if retLaterErr != nil {
 				return retLaterErr
 			}
@@ -242,7 +243,7 @@ func (a *basicDownloadAdapter) download(t *Transfer, cb ProgressCallback, authOk
 	}
 	written, err := tools.CopyWithCallback(dlFile, hasher, res.ContentLength, ccb)
 	if err != nil {
-		return errors.Wrapf(err, tr.Tr.Get("cannot write data to temporary file %q", dlfilename))
+		return errors.Wrap(err, tr.Tr.Get("cannot write data to temporary file %q", dlfilename))
 	}
 
 	if actual := hasher.Hash(); actual != t.Oid {

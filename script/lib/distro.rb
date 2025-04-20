@@ -23,6 +23,10 @@ class DistroMap
   def self.builtin_map
     {
       # RHEL EOL https://access.redhat.com/support/policy/updates/errata
+      # Fedora EOL https://docs.fedoraproject.org/en-US/releases/
+      # SLES EOL https://www.suse.com/lifecycle/
+      # opensuse https://en.opensuse.org/Lifetime
+      # or https://en.wikipedia.org/wiki/OpenSUSE_version_history
       "centos/7" => {
         name: "RPM RHEL 7/CentOS 7",
         component: "el/7",
@@ -30,14 +34,8 @@ class DistroMap
         package_type: "rpm",
         package_tag: "-1.el7",
         equivalent: [
-          "el/7",         # EOL June 2024
-          "scientific/7", # EOL June 2024
-          # opensuse https://en.opensuse.org/Lifetime
-          # or https://en.wikipedia.org/wiki/OpenSUSE_version_history
-          "opensuse/15.4", # EOL November 2023
-          # SLES EOL https://www.suse.com/lifecycle/
-          "sles/12.5", # EOL October 2024 (LTSS October 2027)
-          "sles/15.4", # Current
+          "el/7",                      # EOL June 2024
+          "sles/12.5",                 # EOL October 2024
         ],
       },
       "centos/8" => {
@@ -47,7 +45,9 @@ class DistroMap
         package_type: "rpm",
         package_tag: "-1.el8",
         equivalent: [
-          "el/8",
+          "el/8",                      # EOL May 2029
+          "opensuse/15.5",             # EOL December 2024
+          "sles/15.5",                 # EOL December 2024
         ],
       },
       "rocky/9" => {
@@ -57,9 +57,12 @@ class DistroMap
         package_type: "rpm",
         package_tag: "-1.el9",
         equivalent: [
-          "el/9",
-          "fedora/37", # EOL November 2023
-          "fedora/38", # EOL May 2024
+          "el/9",                      # EOL May 2032
+          "fedora/39",                 # EOL November 2024
+          "fedora/40",                 # EOL May 2025
+          "fedora/41",                 # EOL November 2025
+          "opensuse/15.6",             # EOL December 2025
+          "sles/15.6",                 # Current
         ],
       },
       # Debian EOL https://wiki.debian.org/LTS/
@@ -72,12 +75,12 @@ class DistroMap
         package_type: "deb",
         package_tag: "",
         equivalent: [
-          "debian/buster",    # EOL June 2024
-          "linuxmint/ulyana", # EOL April 2025
-          "linuxmint/ulyssa", # EOL April 2025
-          "linuxmint/uma",    # EOL April 2025
-          "linuxmint/una",    # EOL April 2025
-          "ubuntu/focal",     # EOL April 2025
+          "debian/buster",             # EOL June 2024
+          "linuxmint/ulyana",          # EOL April 2025
+          "linuxmint/ulyssa",          # EOL April 2025
+          "linuxmint/uma",             # EOL April 2025
+          "linuxmint/una",             # EOL April 2025
+          "ubuntu/focal",              # EOL April 2025
         ],
       },
       "debian/11" => {
@@ -87,12 +90,12 @@ class DistroMap
         package_type: "deb",
         package_tag: "",
         equivalent: [
-          "debian/bullseye",  # EOL June 2026
-          "ubuntu/jammy",     # EOL April 2027
-          "ubuntu/kinetic",   # EOL July 2023
-          "ubuntu/lunar",     # EOL January 2024
-          "linuxmint/vanessa",# EOL April 2027
-          "linuxmint/vera",   # EOL April 2027
+          "debian/bullseye",           # EOL August 2026
+          "linuxmint/vanessa",         # EOL April 2027
+          "linuxmint/vera",            # EOL April 2027
+          "linuxmint/victoria",        # EOL April 2027
+          "linuxmint/virginia",        # EOL April 2027
+          "ubuntu/jammy",              # EOL April 2027
         ],
       },
       "debian/12" => {
@@ -102,8 +105,11 @@ class DistroMap
         package_type: "deb",
         package_tag: "",
         equivalent: [
-          "debian/bookworm",  # Current stable
-          "debian/trixie",    # Current testing
+          "debian/bookworm",           # EOL June 2028
+          "debian/trixie",             # Current testing (Debian 13)
+          "linuxmint/wilma",           # EOL April 2029
+          "ubuntu/noble",              # EOL June 2029
+          "ubuntu/oracular",           # EOL July 2025
         ]
       },
     }

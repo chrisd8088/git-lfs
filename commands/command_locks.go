@@ -9,7 +9,6 @@ import (
 	"github.com/git-lfs/git-lfs/v3/errors"
 	"github.com/git-lfs/git-lfs/v3/git"
 	"github.com/git-lfs/git-lfs/v3/locking"
-	"github.com/git-lfs/git-lfs/v3/tools"
 	"github.com/git-lfs/git-lfs/v3/tr"
 	"github.com/spf13/cobra"
 )
@@ -96,9 +95,9 @@ func locksCommand(cmd *cobra.Command, args []string) {
 	for _, lock := range locks {
 		lockPaths = append(lockPaths, lock.Path)
 		locksByPath[lock.Path] = lock
-		maxPathLen = tools.MaxInt(maxPathLen, len(lock.Path))
+		maxPathLen = max(maxPathLen, len(lock.Path))
 		if lock.Owner != nil {
-			maxNameLen = tools.MaxInt(maxNameLen, len(lock.Owner.Name))
+			maxNameLen = max(maxNameLen, len(lock.Owner.Name))
 		}
 	}
 
@@ -110,8 +109,8 @@ func locksCommand(cmd *cobra.Command, args []string) {
 			ownerName = lock.Owner.Name
 		}
 
-		pathPadding := tools.MaxInt(maxPathLen-len(lock.Path), 0)
-		namePadding := tools.MaxInt(maxNameLen-len(ownerName), 0)
+		pathPadding := max(maxPathLen-len(lock.Path), 0)
+		namePadding := max(maxNameLen-len(ownerName), 0)
 		kind := ""
 		if locksOwned != nil {
 			if locksOwned[lock] {
@@ -185,6 +184,6 @@ func init() {
 		cmd.Flags().BoolVarP(&locksCmdFlags.Local, "local", "", false, "only list cached local record of own locks")
 		cmd.Flags().BoolVarP(&locksCmdFlags.Cached, "cached", "", false, "list cached lock information from the last remote query, instead of actually querying the server")
 		cmd.Flags().BoolVarP(&locksCmdFlags.Verify, "verify", "", false, "verify lock owner on server and mark own locks by 'O'")
-		cmd.Flags().BoolVarP(&locksCmdFlags.JSON, "json", "", false, "print output in json")
+		cmd.Flags().BoolVarP(&locksCmdFlags.JSON, "json", "j", false, "Give the output in a stable JSON format for scripts")
 	})
 }

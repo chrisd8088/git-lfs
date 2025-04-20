@@ -38,6 +38,16 @@ begin_test "push with tracked ref"
 )
 end_test
 
+begin_test "push with invalid ref"
+(
+  set -e
+  push_repo_setup "push-invalid-branch-required"
+
+  git lfs push origin jibberish >push.log 2>&1 && exit 1
+  grep "Invalid ref argument" push.log
+)
+end_test
+
 begin_test "push with bad ref"
 (
   set -e
@@ -860,6 +870,44 @@ begin_test 'push with multiple refs and data the server already has'
   [ "$(grep -c "$contents_oid" push.log)" = 0 ]
 
   # Yet we should have pushed the new object successfully.
+  assert_server_object "$reponame" "$contents2_oid"
+)
+end_test
+
+begin_test 'push with multiple tag refs'
+(
+  set -e
+
+  reponame="push-multi-ref-tags"
+  setup_remote_repo "$reponame"
+  clone_repo "$reponame" "$reponame"
+
+  git lfs track "*.dat"
+  git add .gitattributes
+  git commit -m "initial commit"
+
+  contents="abc123"
+  contents_oid="$(calc_oid "$contents")"
+  printf "%s" "$contents" > a.dat
+  git add a.dat
+  git commit -m "add a.dat"
+
+  git tag v1.0.0
+
+  git push origin main v1.0.0
+
+  assert_server_object "$reponame" "$contents_oid"
+
+  contents2="def456"
+  contents2_oid="$(calc_oid "$contents2")"
+  printf "%s" "$contents2" > b.dat
+  git add b.dat
+  git commit -m "add b.dat"
+
+  git tag v1.0.1
+
+  git lfs push origin v1.0.1
+
   assert_server_object "$reponame" "$contents2_oid"
 )
 end_test

@@ -39,7 +39,7 @@ begin_test "credentials without useHttpPath, with bad path password"
   reponame="no-httppath-bad-password"
   setup_remote_repo "$reponame"
 
-  printf "path:wrong" > "$CREDSDIR/127.0.0.1--$reponame"
+  printf ":path:wrong" > "$CREDSDIR/127.0.0.1--$reponame"
 
   clone_repo "$reponame" without-path
   git config credential.useHttpPath false
@@ -76,7 +76,7 @@ begin_test "credentials with url-specific useHttpPath, with bad path password"
   reponame="url-specific-httppath-bad-password"
   setup_remote_repo "$reponame"
 
-  printf "path:wrong" > "$CREDSDIR/127.0.0.1--$reponame"
+  printf ":path:wrong" > "$CREDSDIR/127.0.0.1--$reponame"
 
   clone_repo "$reponame" with-url-specific-path
   git config credential.$GITSERVER.useHttpPath false
@@ -108,7 +108,7 @@ begin_test "credentials with useHttpPath, with wrong password"
   reponame="httppath-bad-password"
   setup_remote_repo "$reponame"
 
-  printf "path:wrong" > "$CREDSDIR/127.0.0.1--$reponame"
+  printf ":path:wrong" > "$CREDSDIR/127.0.0.1--$reponame"
 
   clone_repo "$reponame" with-path-wrong-pass
   git checkout -b with-path-wrong-pass
@@ -140,7 +140,7 @@ begin_test "credentials with useHttpPath, with correct password"
   reponame="$(basename "$0" ".sh")"
   setup_remote_repo "$reponame"
 
-  printf "path:$reponame" > "$CREDSDIR/127.0.0.1--$reponame"
+  printf ":path:$reponame" > "$CREDSDIR/127.0.0.1--$reponame"
 
   clone_repo "$reponame" with-path-correct-pass
   git checkout -b with-path-correct-pass
@@ -181,7 +181,7 @@ begin_test "credentials send wwwauth[] by default"
   reponame="$(basename "$0" ".sh")-wwwauth-required"
   setup_remote_repo "$reponame"
 
-  printf "path:$reponame" > "$CREDSDIR/127.0.0.1--$reponame"
+  printf ":path:$reponame" > "$CREDSDIR/127.0.0.1--$reponame"
 
   clone_repo "$reponame" "$reponame"
   git checkout -b new-branch
@@ -222,7 +222,7 @@ begin_test "credentials sends wwwauth[] and fails with finicky helper"
   reponame="$(basename "$0" ".sh")-wwwauth-forbidden-finicky"
   setup_remote_repo "$reponame"
 
-  printf "path:$reponame" > "$CREDSDIR/127.0.0.1--$reponame"
+  printf ":path:$reponame" > "$CREDSDIR/127.0.0.1--$reponame"
 
   clone_repo "$reponame" "$reponame"
   git checkout -b new-branch
@@ -258,7 +258,7 @@ begin_test "credentials skips wwwauth[] with option"
   setup_remote_repo "$reponame"
   git config --global credential.$GITSERVER.skipwwwauth true
 
-  printf "path:$reponame" > "$CREDSDIR/127.0.0.1--$reponame"
+  printf ":path:$reponame" > "$CREDSDIR/127.0.0.1--$reponame"
 
   clone_repo "$reponame" "$reponame"
   git checkout -b new-branch
@@ -290,12 +290,73 @@ begin_test "credentials skips wwwauth[] with option"
 )
 end_test
 
+begin_test "credentials can authenticate with Bearer auth"
+(
+  set -e
+  git credential capability </dev/null | grep "capability authtype" || exit 0
+
+  reponame="auth-bearer-token"
+  setup_remote_repo "$reponame"
+
+  printf "Bearer::token" > "$CREDSDIR/127.0.0.1--$reponame"
+
+  clone_repo "$reponame" "$reponame"
+  git checkout -b new-branch
+
+  git lfs track "*.dat" 2>&1 | tee track.log
+  grep "Tracking \"\*.dat\"" track.log
+
+  contents="b"
+
+  printf "%s" "$contents" > b.dat
+  git add b.dat
+  git add .gitattributes
+  git commit -m "add b.dat"
+
+  GIT_TERMINAL_PROMPT=0 GIT_TRACE=1 GIT_TRANSFER_TRACE=1 GIT_CURL_VERBOSE=1 git push origin new-branch 2>&1 | tee push.log
+  grep "Uploading LFS objects: 100% (1/1), 1 B" push.log
+  [ "1" -eq "$(cat push.log | grep "creds: git credential approve" | wc -l)" ]
+  [ "1" -eq "$(cat push.log | grep "creds: git credential fill" | wc -l)" ]
+)
+end_test
+
+begin_test "credentials can authenticate with multistage auth"
+(
+  set -e
+  [ $(git credential capability </dev/null | grep -E "capability (authtype|state)" | wc -l) -eq 2 ] || exit 0
+
+  reponame="auth-multistage-token"
+  setup_remote_repo "$reponame"
+
+  printf 'Multistage::cred2:state1:state2:\nMultistage::cred1::state1:true' > "$CREDSDIR/127.0.0.1--$reponame"
+
+  clone_repo "$reponame" "$reponame"
+  git checkout -b new-branch
+
+  git lfs track "*.dat" 2>&1 | tee track.log
+  grep "Tracking \"\*.dat\"" track.log
+
+  contents="b"
+
+  printf "%s" "$contents" > b.dat
+  git add b.dat
+  git add .gitattributes
+  git commit -m "add b.dat"
+
+  GIT_TERMINAL_PROMPT=0 GIT_TRACE=1 GIT_TRANSFER_TRACE=1 GIT_CURL_VERBOSE=1 git push origin new-branch 2>&1 | tee push.log
+  grep "Uploading LFS objects: 100% (1/1), 1 B" push.log
+  [ "1" -eq "$(cat push.log | grep "creds: git credential approve" | wc -l)" ]
+  [ "2" -eq "$(cat push.log | grep "creds: git credential fill" | wc -l)" ]
+)
+end_test
+
 begin_test "git credential"
 (
   set -e
 
-  printf "git:server" > "$CREDSDIR/credential-test.com"
-  printf "git:path" > "$CREDSDIR/credential-test.com--some-path"
+  printf ":git:server" > "$CREDSDIR/credential-test.com"
+  printf ":git:path" > "$CREDSDIR/credential-test.com--some-path"
+  printf 'Multistage::bazquux:state1:state2:\nMultistage::foobar::state1:true' > "$CREDSDIR/example.com"
 
   mkdir empty
   cd empty
@@ -335,6 +396,42 @@ path=some/path" | GIT_TERMINAL_PROMPT=0 git credential fill > cred.log
 host=credential-test.com
 username=git
 password=server"
+
+  [ "$expected" = "$(cat cred.log)" ]
+
+  [ $(git credential capability </dev/null | grep -E "capability (authtype|state)" | wc -l) -eq 2 ] || exit 0
+
+  echo "capability[]=authtype
+capability[]=state
+protocol=http
+host=example.com" | GIT_TERMINAL_PROMPT=0 git credential fill > cred.log
+  cat cred.log
+
+  expected="capability[]=authtype
+capability[]=state
+authtype=Multistage
+credential=foobar
+protocol=http
+host=example.com
+continue=1
+state[]=lfstest:state1"
+
+  [ "$expected" = "$(cat cred.log)" ]
+
+  echo "capability[]=authtype
+capability[]=state
+protocol=http
+host=example.com
+state[]=lfstest:state1" | GIT_TERMINAL_PROMPT=0 git credential fill > cred.log
+  cat cred.log
+
+  expected="capability[]=authtype
+capability[]=state
+authtype=Multistage
+credential=bazquux
+protocol=http
+host=example.com
+state[]=lfstest:state2"
 
   [ "$expected" = "$(cat cred.log)" ]
 )
@@ -540,7 +637,7 @@ begin_test "credentials from lfs.url"
   grep "HTTP: 401" push.log
   # Ensure we didn't make a second batch request, which means the request
   # was successfully retried internally
-  [ ! "$(grep "tq: retrying object" push.log)" ]
+  grep "tq: retrying object" push.log && exit 1
   grep "Uploading LFS objects:   0% (0/1), 0 B" push.log
 
   echo "bad fetch"
@@ -557,7 +654,7 @@ begin_test "credentials from lfs.url"
   GIT_TRACE=1 git lfs fetch --all 2>&1 | tee fetch.log
   # No 401 should occur as we've already set an access mode for the
   # storage endpoint during the push
-  [ ! "$(grep "HTTP: 401" fetch.log)" ]
+  grep "HTTP: 401" fetch.log && exit 1
   git lfs fsck
 
   echo "good fetch, setting access mode"
@@ -571,7 +668,7 @@ begin_test "credentials from lfs.url"
   grep "HTTP: 401" fetch.log
   # Ensure we didn't make a second batch request, which means the request
   # was successfully retried internally
-  [ ! "$(grep "tq: retrying object" fetch.log)" ]
+  grep "tq: retrying object" fetch.log && exit 1
 
   git lfs fsck
 )
@@ -605,7 +702,7 @@ begin_test "credentials from remote.origin.url"
   grep "HTTP: 401" push.log
   # Ensure we didn't make a second batch request, which means the request
   # was successfully retried internally
-  [ ! "$(grep "tq: retrying object" push.log)" ]
+  grep "tq: retrying object" push.log && exit 1
   grep "Uploading LFS objects: 100% (1/1), 7 B" push.log
 
   echo "bad fetch"
@@ -623,7 +720,7 @@ begin_test "credentials from remote.origin.url"
   GIT_TRACE=1 git lfs fetch --all 2>&1 | tee fetch.log
   # No 401 should occur as we've already set an access mode for the
   # storage endpoint during the push
-  [ ! "$(grep "HTTP: 401" fetch.log)" ]
+  grep "HTTP: 401" fetch.log && exit 1
   git lfs fsck
 
   echo "good fetch, setting access mode"
@@ -637,7 +734,7 @@ begin_test "credentials from remote.origin.url"
   grep "HTTP: 401" fetch.log
   # Ensure we didn't make a second batch request, which means the request
   # was successfully retried internally
-  [ ! "$(grep "tq: retrying object" fetch.log)" ]
+  grep "tq: retrying object" fetch.log && exit 1
 
   git lfs fsck
 )

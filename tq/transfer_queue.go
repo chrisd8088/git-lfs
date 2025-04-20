@@ -251,6 +251,7 @@ type objectTuple struct {
 	Size            int64
 	Missing         bool
 	ReadyTime       time.Time
+	retryLaterTime  time.Time
 }
 
 func (o *objectTuple) ToTransfer() *Transfer {
@@ -546,7 +547,10 @@ func (q *TransferQueue) enqueueAndCollectRetriesFor(batch batch) (batch, error) 
 	enqueueRetry := func(t *objectTuple, err error, readyTime *time.Time) {
 		count := q.rc.Increment(t.Oid)
 
-		if readyTime == nil {
+		if !t.retryLaterTime.IsZero() {
+			t.ReadyTime = t.retryLaterTime
+			t.retryLaterTime = time.Time{}
+		} else if readyTime == nil {
 			t.ReadyTime = q.rc.ReadyTime(t.Oid)
 		} else {
 			t.ReadyTime = *readyTime
@@ -580,26 +584,25 @@ func (q *TransferQueue) enqueueAndCollectRetriesFor(batch batch) (batch, error) 
 		var err error
 		bRes, err = Batch(q.manifest, q.direction, q.remote, q.ref, batch.ToTransfers())
 		if err != nil {
-			var hasNonScheduledErrors = false
+			var hasNonRetriableObjects = false
 			// If there was an error making the batch API call, mark all of
-			// the objects for retry, and return them along with the error
-			// that was encountered. If any of the objects couldn't be
-			// retried, they will be marked as failed.
+			// the objects for retry if possible.  If any should not be retried,
+			// they will be marked as failed.
 			for _, t := range batch {
 				if q.canRetryObject(t.Oid, err) {
-					hasNonScheduledErrors = true
 					enqueueRetry(t, err, nil)
 				} else if readyTime, canRetry := q.canRetryObjectLater(t.Oid, err); canRetry {
 					enqueueRetry(t, err, &readyTime)
 				} else {
-					hasNonScheduledErrors = true
+					hasNonRetriableObjects = true
 					q.wait.Done()
 				}
 			}
 
 			// Only return error and mark operation as failure if at least one object
 			// was not enqueued for retrial at a later point.
-			if hasNonScheduledErrors {
+			// Make sure to return an error which causes all other objects to be retried.
+			if hasNonRetriableObjects {
 				return next, errors.NewRetriableError(err)
 			} else {
 				return next, nil
@@ -649,7 +652,7 @@ func (q *TransferQueue) enqueueAndCollectRetriesFor(batch batch) (batch, error) 
 			// Transfer object, then we give up on the
 			// transfer by telling the progress meter to
 			// skip the number of bytes in "o".
-			q.errorc <- errors.Errorf(tr.Tr.Get("[%v] The server returned an unknown OID.", o.Oid))
+			q.errorc <- errors.New(tr.Tr.Get("[%v] The server returned an unknown OID.", o.Oid))
 
 			q.Skip(o.Size)
 			q.wait.Done()
@@ -749,7 +752,7 @@ func (q *TransferQueue) partitionTransfers(transfers []*Transfer) (present []*Tr
 		var err error
 
 		if t.Size < 0 {
-			err = errors.Errorf(tr.Tr.Get("object %q has invalid size (got: %d)", t.Oid, t.Size))
+			err = errors.New(tr.Tr.Get("object %q has invalid size (got: %d)", t.Oid, t.Size))
 		} else {
 			fd, serr := os.Stat(t.Path)
 			if serr != nil {
@@ -803,14 +806,14 @@ func (q *TransferQueue) handleTransferResult(
 			// If the object can't be retried now, but can be
 			// after a certain period of time, send it to
 			// the retry channel with a time when it's ready.
-			tracerx.Printf("tq: retrying object %s after %s seconds.", oid, time.Until(readyTime).Seconds())
+			tracerx.Printf("tq: retrying object %s after %.2fs", oid, time.Until(readyTime).Seconds())
 			q.trMutex.Lock()
 			objects, ok := q.transfers[oid]
 			q.trMutex.Unlock()
 
 			if ok {
 				t := objects.First()
-				t.ReadyTime = readyTime
+				t.retryLaterTime = readyTime
 				retries <- t
 			} else {
 				q.errorc <- res.Error
@@ -855,10 +858,12 @@ func (q *TransferQueue) handleTransferResult(
 			// same OID.
 			for _, t := range objects.All() {
 				c <- &Transfer{
-					Name: t.Name,
-					Path: t.Path,
-					Oid:  t.Oid,
-					Size: t.Size,
+					Name:    t.Name,
+					Path:    t.Path,
+					Oid:     t.Oid,
+					Size:    t.Size,
+					Actions: res.Transfer.Actions,
+					Links:   res.Transfer.Links,
 				}
 			}
 		}

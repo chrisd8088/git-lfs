@@ -6,7 +6,7 @@ require (
 	github.com/avast/retry-go v2.4.2+incompatible
 	github.com/dpotapov/go-spnego v0.0.0-20210315154721-298b63a54430
 	github.com/git-lfs/gitobj/v2 v2.1.1
-	github.com/git-lfs/go-netrc v0.0.0-20210914205454-f0c862dd687a
+	github.com/git-lfs/go-netrc v0.0.0-20250218165306-ba0029b43d11
 	github.com/git-lfs/pktline v0.0.0-20210330133718-06e9096e2825
 	github.com/git-lfs/wildmatch/v2 v2.0.1
 	github.com/jmhodges/clock v1.2.0
@@ -19,9 +19,9 @@ require (
 	github.com/ssgelm/cookiejarparser v1.0.1
 	github.com/stretchr/testify v1.6.1
 	github.com/xeipuuv/gojsonschema v0.0.0-20170210233622-6b67b3fab74d
-	golang.org/x/net v0.17.0
-	golang.org/x/sync v0.1.0
-	golang.org/x/sys v0.15.0
+	golang.org/x/net v0.38.0
+	golang.org/x/sync v0.12.0
+	golang.org/x/sys v0.31.0
 )
 
 require (
@@ -39,9 +39,11 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
-	golang.org/x/crypto v0.17.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/crypto v0.36.0 // indirect
+	golang.org/x/text v0.23.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-go 1.17
+go 1.23.0
+
+toolchain go1.24.0

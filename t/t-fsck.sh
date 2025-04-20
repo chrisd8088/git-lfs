@@ -142,7 +142,7 @@ create_invalid_pointers() {
   ext="${2:-dat}"
 
   git cat-file blob ":$valid" | awk '{ sub(/$/, "\r"); print }' >"crlf.$ext"
-  base64 < /dev/urandom | head -c 1025 >"large.$ext"
+  lfstest-genrandom --base64 1025 >"large.$ext"
   git \
     -c "filter.lfs.process=" \
     -c "filter.lfs.clean=cat" \
@@ -509,5 +509,17 @@ begin_test "fsck operates on specified refs"
 
   # Make the result of the subshell a success.
   true
+)
+end_test
+
+begin_test "fsck detects invalid ref"
+(
+  set -e
+  reponame="fsck-default"
+  git init $reponame
+  cd $reponame
+
+  git lfs fsck jibberish >fsck.log 2>&1 && exit 1
+  grep "can't resolve ref" fsck.log
 )
 end_test

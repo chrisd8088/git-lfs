@@ -62,7 +62,6 @@ resolve_symlink() {
   else
     readlink -f "$arg"
   fi
-
 }
 
 # The root directory for the git-lfs repository by default.
@@ -77,13 +76,24 @@ BINPATH="$ROOTDIR/bin"
 PATH="$BINPATH:$PATH"
 
 # Always provide a test dir outside our git repo if not specified
-TEMPDIR_PREFIX="git-lfs_TEMP.XXXXXX"
-if [ -z "$GIT_LFS_TEST_DIR" ]; then
-    GIT_LFS_TEST_DIR=$(mktemp -d -t "$TEMPDIR_PREFIX")
-    GIT_LFS_TEST_DIR=$(resolve_symlink $GIT_LFS_TEST_DIR)
-    # cleanup either after single test or at end of integration (except on fail)
-    RM_GIT_LFS_TEST_DIR=yes
+if [ "$IS_MAC" -eq 1 ]; then
+  TEMPDIR_PREFIX="git-lfs_TEMP"
+else
+  TEMPDIR_PREFIX="git-lfs_TEMP.XXXXXX"
 fi
+
+if [ -z "$GIT_LFS_TEST_DIR" ]; then
+    GIT_LFS_TEST_DIR="$(mktemp -d -t "$TEMPDIR_PREFIX")"
+    GIT_LFS_TEST_DIR="$(resolve_symlink "$GIT_LFS_TEST_DIR")"
+    # cleanup either after single test or at end of integration (except on fail)
+    RM_GIT_LFS_TEST_DIR="yes"
+fi
+
+# Make these variables available to all test files run in the same shell,
+# particularly when setup() is run first by itself to start a single
+# common lfstest-gitserver instance.
+export GIT_LFS_TEST_DIR RM_GIT_LFS_TEST_DIR
+
 # create a temporary work space
 TMPDIR=$GIT_LFS_TEST_DIR
 
@@ -106,10 +116,6 @@ REMOTEDIR="$ROOTDIR/t/remote"
 #
 CREDSDIR="$REMOTEDIR/creds/"
 
-# This is the prefix for Git config files.  See the "Test Suite" section in
-# t/README.md
-LFS_CONFIG="$REMOTEDIR/config"
-
 # This file contains the URL of the test Git server. See the "Test Suite"
 # section in t/README.md
 LFS_URL_FILE="$REMOTEDIR/url"
@@ -131,7 +137,7 @@ LFS_CLIENT_CERT_FILE="$REMOTEDIR/client.crt"
 # This file contains the client key of the client cert endpoint of the test Git server.
 LFS_CLIENT_KEY_FILE="$REMOTEDIR/client.key"
 
-# This file contains the client key of the client cert endpoint of the test Git server.
+# This file contains the encrypted client key of the client cert endpoint of the test Git server.
 LFS_CLIENT_KEY_FILE_ENCRYPTED="$REMOTEDIR/client.enc.key"
 
 # the fake home dir used for the initial setup
@@ -146,7 +152,6 @@ GIT_CONFIG_NOSYSTEM=1
 GIT_TERMINAL_PROMPT=0
 GIT_SSH=lfs-ssh-echo
 GIT_TEMPLATE_DIR="$(native_path "$ROOTDIR/t/fixtures/templates")"
-APPVEYOR_REPO_COMMIT_MESSAGE="test: env test should look for GIT_SSH too"
 LC_ALL=C
 
 export CREDSDIR
@@ -154,7 +159,6 @@ export GIT_LFS_FORCE_PROGRESS
 export GIT_CONFIG_NOSYSTEM
 export GIT_SSH
 export GIT_TEMPLATE_DIR
-export APPVEYOR_REPO_COMMIT_MESSAGE
 export LC_ALL
 
 # Don't fail if run under git rebase -x.

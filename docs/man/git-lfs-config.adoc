@@ -91,7 +91,8 @@ keepalive connections. Default: 30 minutes.
 +
 When using the pure SSH-based protocol, whether to multiplex requests
 over a single connection when possible. This option requires the use of
-OpenSSH or a compatible SSH client. Default: true.
+OpenSSH or a compatible SSH client. Default: false on Windows, otherwise
+true.
 * `lfs.ssh.retries`
 +
 Specifies the number of times Git LFS will attempt to obtain
@@ -211,6 +212,15 @@ If set to true, this enables rewriting href of LFS objects using
 `url.*.insteadof/pushinsteadof` config. `pushinsteadof` is used only for
 uploading, and `insteadof` is used for downloading and for uploading
 when `pushinsteadof` is not set.
+* `lfs.transfer.batchSize`
++
+The number of objects to download/upload sent in a single batch request
+to the LFS server. Default is 100.
++
+This value should be changed with caution, as it can have a significant
+impact on the performance of the LFS server and the server is free to
+return an HTTP 413 status code if this value is too high as the Batch
+API specification states.
 
 === Push settings
 
@@ -272,6 +282,9 @@ called if --verify-remote is enabled.
 * `lfs.pruneverifyremotealways`
 +
 Always run `git lfs prune` as if `--verify-remote` was provided.
+* `lfs.pruneverifyunreachablealways`
++
+Always run `git lfs prune` as if `--verify-unreachable` was provided.
 
 === Extensions
 

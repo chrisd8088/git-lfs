@@ -41,6 +41,11 @@ begin_test "init for fetch tests"
 
   assert_server_object "$reponame" "$contents_oid"
 
+  # Add an empty file
+  touch empty.dat
+  git add empty.dat
+  git commit -m 'empty'
+
   # Add a file in a different branch
   git checkout -b newbranch
   printf "%s" "$b" > b.dat
@@ -63,25 +68,75 @@ begin_test "fetch"
   cd clone
   rm -rf .git/lfs/objects
 
+  git lfs fetch --dry-run 2>&1 | tee fetch.log
+  grep "fetch $contents_oid => a\.dat" fetch.log
+  refute_local_object "$contents_oid"
+
   git lfs fetch
   assert_local_object "$contents_oid" 1
 
   git lfs fsck 2>&1 | tee fsck.log
   grep "Git LFS fsck OK" fsck.log
+
+  git lfs fetch --dry-run 2>&1 | tee fetch.log
+  grep "fetch .* => a\.dat" fetch.log && exit 1 || true
 )
 end_test
 
-begin_test "fetch (empty file)"
+begin_test "fetch --json"
 (
   set -e
   cd clone
   rm -rf .git/lfs/objects
 
-  touch empty.dat
-  git add empty.dat
-  git commit -m 'empty'
+  git lfs fetch --dry-run --json | tee fetch-dry-run.json
+  git lfs fetch --json | tee fetch.json
+  assert_local_object "$contents_oid" 1
+  cat > expected.json <<-EOF
+{
+ "transfers": [
+  {
+   "name": "a.dat",
+   "oid": "$contents_oid",
+   "size": 1,
+   "actions": {
+    "download": {
+     "href": "$GITSERVER/storage/$contents_oid?r=$reponame",
+     "expires_at": "0001-01-01T00:00:00Z"
+    }
+   },
+   "path": "$(native_path_escaped "$(local_object_path "$contents_oid")")"
+  }
+ ]
+}
+EOF
+  diff -u expected.json fetch-dry-run.json
+  diff -u expected.json fetch.json
+
+  git lfs fetch --json | tee fetch.json
+  cat > expected.json <<-EOF
+{
+ "transfers": []
+}
+EOF
+  diff -u expected.json fetch.json
+)
+end_test
+
+begin_test "fetch --refetch"
+(
+  set -e
+  cd clone
+  rm -rf .git/lfs/objects
 
   git lfs fetch
+  assert_local_object "$contents_oid" 1
+
+  corrupt_local_object "$contents_oid"
+  refute_local_object "$contents_oid" 1
+
+  git lfs fetch --refetch
+  assert_local_object "$contents_oid" 1
 
   git lfs fsck 2>&1 | tee fsck.log
   grep "Git LFS fsck OK" fsck.log
@@ -128,10 +183,113 @@ begin_test "fetch with remote and branches"
 
   rm -rf .git/lfs/objects
 
+  git lfs fetch origin main newbranch --dry-run 2>&1 | tee fetch.log
+  grep "fetch $contents_oid => a\.dat" fetch.log
+  grep "fetch $b_oid => b\.dat" fetch.log
+  refute_local_object "$contents_oid"
+  refute_local_object "$b_oid"
+
   git lfs fetch origin main newbranch
   assert_local_object "$contents_oid" 1
   assert_local_object "$b_oid" 1
 
+  git lfs fsck 2>&1 | tee fsck.log
+  grep "Git LFS fsck OK" fsck.log
+
+  git lfs fetch origin main newbranch --dry-run | tee fetch.log
+  grep "fetch .* => [ab]\.dat" fetch.log && exit 1 || true
+)
+end_test
+
+begin_test "fetch --json with remote and branches"
+(
+  set -e
+  cd clone
+
+  git checkout newbranch
+  git checkout main
+
+  rm -rf .git/lfs/objects
+
+  git lfs fetch origin main newbranch --json --dry-run | tee fetch-dry-run.json
+  refute_local_object "$contents_oid"
+  refute_local_object "$b_oid"
+
+  git lfs fetch origin main newbranch --json | tee fetch.json
+  assert_local_object "$contents_oid" 1
+  assert_local_object "$b_oid" 1
+
+  # Check the JSON output, without enforcing order between a.dat and b.dat
+  expected_a='{
+   "name": "a.dat",
+   "oid": "'$contents_oid'",
+   "size": 1,
+   "actions": {
+    "download": {
+     "href": "'$GITSERVER'/storage/'$contents_oid'?r='$reponame'",
+     "expires_at": "0001-01-01T00:00:00Z"
+    }
+   },
+   "path": "'$(native_path_escaped "$(local_object_path "$contents_oid")")'"
+  }'
+  expected_b='{
+   "name": "b.dat",
+   "oid": "'$b_oid'",
+   "size": 1,
+   "actions": {
+    "download": {
+     "href": "'$GITSERVER'/storage/'$b_oid'?r='$reponame'",
+     "expires_at": "0001-01-01T00:00:00Z"
+    }
+   },
+   "path": "'$(native_path_escaped "$(local_object_path "$b_oid")")'"
+  }'
+  cat > expected-a-b.json <<-EOF
+{
+ "transfers": [
+  $expected_a,
+  $expected_b
+ ]
+}
+EOF
+  cat > expected-b-a.json <<-EOF
+{
+ "transfers": [
+  $expected_b,
+  $expected_a
+ ]
+}
+EOF
+  diff -u expected-a-b.json fetch-dry-run.json || diff -u expected-b-a.json fetch-dry-run.json || exit 1
+  diff -u expected-a-b.json fetch.json || diff -u expected-b-a.json fetch-dry-run.json || exit 1
+)
+end_test
+
+begin_test "fetch --refetch with remote and branches"
+(
+  set -e
+  cd clone
+
+  git checkout newbranch
+  git checkout main
+
+  rm -rf .git/lfs/objects
+
+  git lfs fetch origin main newbranch
+  assert_local_object "$contents_oid" 1
+  assert_local_object "$b_oid" 1
+
+  corrupt_local_object "$contents_oid"
+  corrupt_local_object "$b_oid"
+  refute_local_object "$contents_oid" 1
+  refute_local_object "$b_oid" 1
+
+  git lfs fetch --refetch --json origin main newbranch | tee fetch.json
+  assert_local_object "$contents_oid" 1
+  assert_local_object "$b_oid" 1
+
+  # check that we did not fetch a.dat twice
+  [ 1 -eq $(grep -c '"name": "a.dat"' fetch.json) ]
   git lfs fsck 2>&1 | tee fsck.log
   grep "Git LFS fsck OK" fsck.log
 )
@@ -295,6 +453,20 @@ begin_test "fetch with missing object"
   [ "$fetch_exit" != "0" ]
   assert_local_object "$contents_oid" 1
   refute_local_object "$b_oid"
+)
+end_test
+
+begin_test "fetch does not crash on empty key files"
+(
+  set -e
+  cd clone
+  rm -rf .git/lfs/objects
+
+  git config --local http.sslKey /dev/null
+  git config --local http.sslCert /dev/null
+
+  git lfs fetch origin main 2>&1 | tee fetch.log
+  grep "Error decoding PEM block" fetch.log
 )
 end_test
 
@@ -625,6 +797,16 @@ begin_test "fetch raw remote url"
   # LFS object downloaded, pointer still in working directory
   assert_local_object "$contents_oid" 1
   grep "$content_oid" a.dat
+)
+end_test
+
+begin_test "fetch with invalid ref"
+(
+  set -e
+  cd repo
+
+  git lfs fetch origin jibberish >fetch.log 2>&1 && exit 1
+  grep "Invalid ref argument" fetch.log
 )
 end_test
 

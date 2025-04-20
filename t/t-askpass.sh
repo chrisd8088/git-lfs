@@ -34,14 +34,6 @@ begin_test "askpass: push with core.askPass"
 (
   set -e
 
-  if [ ! -z "$TRAVIS" ] ; then
-    # This test is known to be broken on Travis, so we skip it if the $TRAVIS
-    # environment variable is set.
-    #
-    # See: https://github.com/git-lfs/git-lfs/pull/2500 for more.
-    exit 0
-  fi
-
   reponame="askpass-with-config"
   setup_remote_repo "$reponame"
   clone_repo "$reponame" "$reponame"
@@ -70,14 +62,6 @@ end_test
 begin_test "askpass: push with SSH_ASKPASS"
 (
   set -e
-
-  if [ ! -z "$TRAVIS" ] ; then
-    # This test is known to be broken on Travis, so we skip it if the $TRAVIS
-    # environment variable is set.
-    #
-    # See: https://github.com/git-lfs/git-lfs/pull/2500 for more.
-    exit 0
-  fi
 
   reponame="askpass-with-ssh-environ"
   setup_remote_repo "$reponame"
@@ -128,7 +112,7 @@ begin_test "askpass: defaults to provided credentials"
 
   GIT_ASKPASS="lfs-askpass" GIT_TRACE=1 GIT_CURL_VERBOSE=1 git push origin main 2>&1 | tee push.log
 
-  [ ! $(grep "filling with GIT_ASKPASS" push.log) ]
+  grep "filling with GIT_ASKPASS" push.log && exit 1
   grep "main -> main" push.log
 )
 end_test

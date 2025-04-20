@@ -99,12 +99,9 @@ else
 CERT_ARGS ?= -sha1 $(CERT_SHA1)
 endif
 
-# DARWIN_CERT_ID is a portion of the common name of the signing certificatee.
-DARWIN_CERT_ID ?=
-
 # DARWIN_KEYCHAIN_ID is the name of the keychain (with suffix) where the
 # certificate is located.
-DARWIN_KEYCHAIN_ID ?= CI.keychain
+DARWIN_KEYCHAIN_ID ?= lfs.keychain
 
 export DARWIN_DEV_USER DARWIN_DEV_PASS DARWIN_DEV_TEAM
 
@@ -446,35 +443,50 @@ bin/releases/git-lfs-$(VERSION).tar.gz :
 release-linux:
 	./docker/run_dockers.bsh
 
-# release-windows is a target that builds and signs Windows binaries.  It must
-# be run on a Windows machine under Git Bash.
-#
-# You may sign with a different certificate by specifying CERT_ID.
-.PHONY : release-windows
-release-windows: bin/releases/git-lfs-windows-assets-$(VERSION).tar.gz
+# release-windows-stage-1 is a target that builds the Windows Git LFS binaries
+# and prepares them for signing.  It must be run on a Windows machine under Git
+# Bash.
+.PHONY : release-windows-stage-1
+release-windows-stage-1: tmp/stage1
 
-bin/releases/git-lfs-windows-assets-$(VERSION).tar.gz :
-	$(RM) git-lfs-windows-*.exe
+# After this stage completes, the binaries in this directory will be signed.
+tmp/stage1:
+	$(RM) -r tmp/stage1
+	@mkdir -p tmp/stage1
 	@# Using these particular filenames is required for the Inno Setup script to
 	@# work properly.
 	$(MAKE) -B GOOS=windows X=.exe GOARCH=amd64 && cp ./bin/git-lfs.exe ./git-lfs-x64.exe
 	$(MAKE) -B GOOS=windows X=.exe GOARCH=386 && cp ./bin/git-lfs.exe ./git-lfs-x86.exe
 	$(MAKE) -B GOOS=windows X=.exe GOARCH=arm64 && cp ./bin/git-lfs.exe ./git-lfs-arm64.exe
-	@echo Signing git-lfs-x64.exe
-	@$(SIGNTOOL) sign -debug -fd sha256 -tr http://timestamp.digicert.com -td sha256 $(CERT_ARGS) -v git-lfs-x64.exe
-	@echo Signing git-lfs-x86.exe
-	@$(SIGNTOOL) sign -debug -fd sha256 -tr http://timestamp.digicert.com -td sha256 $(CERT_ARGS) -v git-lfs-x86.exe
-	@echo Signing git-lfs-arm64.exe
-	@$(SIGNTOOL) sign -debug -fd sha256 -tr http://timestamp.digicert.com -td sha256 $(CERT_ARGS) -v git-lfs-arm64.exe
+	mv git-lfs-x64.exe git-lfs-x86.exe git-lfs-arm64.exe tmp/stage1
+
+# release-windows-stage-2 is a target that builds the InnoSetup installer and
+# prepares it for signing.  It must be run on a Windows machine under Git Bash.
+.PHONY : release-windows-stage-2
+release-windows-stage-2: tmp/stage2
+
+# After this stage completes, the binaries in tmp/stage2 will be signed.
+tmp/stage2: tmp/stage1
+	cp tmp/stage1/*.exe .
+	@# The git-lfs-windows-*.exe file will be named according to the version
+	@# number in the versioninfo.json, not according to $(VERSION).
 	iscc.exe script/windows-installer/inno-setup-git-lfs-installer.iss
-	@# This file will be named according to the version number in the
-	@# versioninfo.json, not according to $(VERSION).
 	mv git-lfs-windows-*.exe git-lfs-windows.exe
-	@echo Signing git-lfs-windows.exe
-	@$(SIGNTOOL) sign -debug -fd sha256 -tr http://timestamp.digicert.com -td sha256 $(CERT_ARGS) -v git-lfs-windows.exe
-	mv git-lfs-x64.exe git-lfs-windows-amd64.exe
-	mv git-lfs-x86.exe git-lfs-windows-386.exe
-	mv git-lfs-arm64.exe git-lfs-windows-arm64.exe
+	$(RM) -r tmp/stage2
+	@mkdir -p tmp/stage2
+	cp git-lfs-windows.exe tmp/stage2
+
+# release-windows-stage-3 is a target that produces an archive from signed
+# Windows binaries from the previous stages.  It must be run on a Windows
+# machine under Git Bash.
+.PHONY : release-windows-stage-3
+release-windows-stage-3: bin/releases/git-lfs-windows-assets-$(VERSION).tar.gz
+
+bin/releases/git-lfs-windows-assets-$(VERSION).tar.gz : tmp/stage1 tmp/stage2
+	mv tmp/stage1/git-lfs-x64.exe git-lfs-windows-amd64.exe
+	mv tmp/stage1/git-lfs-x86.exe git-lfs-windows-386.exe
+	mv tmp/stage1/git-lfs-arm64.exe git-lfs-windows-arm64.exe
+	mv tmp/stage2/git-lfs-windows.exe git-lfs-windows.exe
 	@# We use tar because Git Bash doesn't include zip.
 	$(TAR) -czf $@ git-lfs-windows-amd64.exe git-lfs-windows-386.exe git-lfs-windows-arm64.exe git-lfs-windows.exe
 	$(RM) git-lfs-windows-amd64.exe git-lfs-windows-386.exe git-lfs-windows-arm64.exe git-lfs-windows.exe
@@ -502,20 +514,20 @@ release-windows-rebuild: bin/releases/git-lfs-windows-assets-$(VERSION).tar.gz
 
 # release-darwin is a target that builds and signs Darwin (macOS) binaries.  It must
 # be run on a macOS machine with a suitable version of XCode.
-#
-# You may sign with a different certificate by specifying DARWIN_CERT_ID.
 .PHONY : release-darwin
 release-darwin: bin/releases/git-lfs-darwin-amd64-$(VERSION).zip bin/releases/git-lfs-darwin-arm64-$(VERSION).zip
+	@cert_id=$$(security find-identity -vp codesigning $(DARWIN_KEYCHAIN_ID) | grep '^ *1)' | awk '{print $$2}') && \
 	for i in $^; do \
 		temp=$$(mktemp -d) && \
 		root=$$(pwd -P) && \
 		( \
 			$(BSDTAR) -C "$$temp" -xf "$$i" && \
-			$(CODESIGN) --keychain $(DARWIN_KEYCHAIN_ID) -s "$(DARWIN_CERT_ID)" --force --timestamp -vvvv --options runtime "$$temp/$(PREFIX)/git-lfs" && \
-			$(CODESIGN) -dvvv "$$temp/$(PREFIX)/git-lfs" && \
+			echo "Signing git-lfs binary for $$i ..." && \
+			$(CODESIGN) --keychain $(DARWIN_KEYCHAIN_ID) -s "$$cert_id" --force --timestamp -v --options runtime "$$temp/$(PREFIX)/git-lfs" && \
 			(cd "$$temp" && $(BSDTAR) --format zip -cf "$$root/$$i" "$(PREFIX)") && \
-			$(CODESIGN) --keychain $(DARWIN_KEYCHAIN_ID) -s "$(DARWIN_CERT_ID)" --force --timestamp -vvvv --options runtime "$$i" && \
-			$(CODESIGN) -dvvv "$$i" && \
+			echo "Signing $$i ..." && \
+			$(CODESIGN) --keychain $(DARWIN_KEYCHAIN_ID) -s "$$cert_id" --force --timestamp -v --options runtime "$$i" && \
+			echo "Notarizing $$i ..." && \
 			jq -e ".notarize.path = \"$$i\" | .apple_id.username = \"$(DARWIN_DEV_USER)\"" script/macos/manifest.json > "$$temp/manifest.json"; \
 			for j in 1 2 3; \
 			do \
@@ -532,22 +544,20 @@ release-write-certificate:
 	@printf 'Wrote %d bytes (SHA256 %s) to certificate file\n' $$(wc -c <"$$CERT_FILE") $$(shasum -ba 256 "$$CERT_FILE" | cut -d' ' -f1)
 
 # release-import-certificate imports the given certificate into the macOS
-# keychain "CI".  It is not generally recommended to run this on a user system,
+# keychain "lfs".  It is not generally recommended to run this on a user system,
 # since it creates a new keychain and modifies the keychain search path.
 .PHONY : release-import-certificate
 release-import-certificate:
 	@[ -n "$(CI)" ] || { echo "Don't run this target by hand." >&2; false; }
-	@echo "Creating CI keychain"
-	security create-keychain -p default CI.keychain
-	security set-keychain-settings CI.keychain
-	security unlock-keychain -p default CI.keychain
+	@echo "Creating keychain"
+	security create-keychain -p default $(DARWIN_KEYCHAIN_ID)
+	security set-keychain-settings $(DARWIN_KEYCHAIN_ID)
+	security unlock-keychain -p default $(DARWIN_KEYCHAIN_ID)
 	@echo "Importing certificate from $(CERT_FILE)"
-	@security import "$$CERT_FILE" -f pkcs12 -k CI.keychain -P "$$CERT_PASS" -A
+	@security import "$$CERT_FILE" -f pkcs12 -k $(DARWIN_KEYCHAIN_ID) -P "$$CERT_PASS" -A
 	@echo "Verifying import and setting permissions"
-	security list-keychains -s CI.keychain
-	security default-keychain -s CI.keychain
-	security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k default CI.keychain
-	security find-identity -vp codesigning CI.keychain
+	security default-keychain -s $(DARWIN_KEYCHAIN_ID)
+	security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k default $(DARWIN_KEYCHAIN_ID) >/dev/null
 
 # TEST_TARGETS is a list of all phony test targets. Each one of them corresponds
 # to a specific kind or subset of tests to run.
@@ -707,16 +717,28 @@ MAN_HTML_TARGETS = man/html/git-lfs-checkout.1.html \
   man/html/git-lfs-update.1.html \
   man/html/git-lfs.1.html
 
-# man generates all ROFF- and HTML-style manpage targets.
+# man generates all ROFF- and HTML-style man page targets.
 .PHONY : man
 man : $(MAN_ROFF_TARGETS) $(MAN_HTML_TARGETS)
 
-# man/% generates ROFF-style man pages from the corresponding .ronn file.
-man/man1/%.1 man/man5/%.5 man/man7/%.7 : docs/man/%.adoc
-	@mkdir -p man/man1 man/man5
-	$(ASCIIDOCTOR) $(ASCIIDOCTOR_EXTRA_ARGS) -b manpage -o $@ $^
+# Generate ROFF-style man pages from the corresponding .adoc files.
+man/man1/%.1 : docs/man/%.adoc
+	@mkdir -p man/man1
+	$(ASCIIDOCTOR) $(ASCIIDOCTOR_EXTRA_ARGS) -b manpage -o $@ $<
+man/man5/%.5 : docs/man/%.adoc
+	@mkdir -p man/man5
+	$(ASCIIDOCTOR) $(ASCIIDOCTOR_EXTRA_ARGS) -b manpage -o $@ $<
+man/man7/%.7 : docs/man/%.adoc
+	@mkdir -p man/man7
+	$(ASCIIDOCTOR) $(ASCIIDOCTOR_EXTRA_ARGS) -b manpage -o $@ $<
 
-# man/%.html generates HTML-style man pages from the corresponding .ronn file.
-man/html/%.1.html man/html/%.5.html man/html/%.7.html : docs/man/%.adoc
+# Generate HTML-style man pages from the corresponding .adoc files.
+man/html/%.1.html : docs/man/%.adoc
 	@mkdir -p man/html
-	$(ASCIIDOCTOR) $(ASCIIDOCTOR_EXTRA_ARGS) -b html5 -o $@ $^
+	$(ASCIIDOCTOR) $(ASCIIDOCTOR_EXTRA_ARGS) -b html5 -o $@ $<
+man/html/%.5.html : docs/man/%.adoc
+	@mkdir -p man/html
+	$(ASCIIDOCTOR) $(ASCIIDOCTOR_EXTRA_ARGS) -b html5 -o $@ $<
+man/html/%.7.html : docs/man/%.adoc
+	@mkdir -p man/html
+	$(ASCIIDOCTOR) $(ASCIIDOCTOR_EXTRA_ARGS) -b html5 -o $@ $<

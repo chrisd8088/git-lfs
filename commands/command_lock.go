@@ -94,7 +94,7 @@ func computeLockData() (*lockData, error) {
 	}, nil
 }
 
-// lockPaths relativizes the given filepath such that it is relative to the root
+// lockPath relativizes the given filepath such that it is relative to the root
 // path of the repository it is contained within, taking into account the
 // working directory of the caller.
 //
@@ -142,6 +142,6 @@ func lockPath(data *lockData, file string) (string, error) {
 func init() {
 	RegisterCommand("lock", lockCommand, func(cmd *cobra.Command) {
 		cmd.Flags().StringVarP(&lockRemote, "remote", "r", "", "specify which remote to use when interacting with locks")
-		cmd.Flags().BoolVarP(&locksCmdFlags.JSON, "json", "", false, "print output in json")
+		cmd.Flags().BoolVarP(&locksCmdFlags.JSON, "json", "j", false, "Give the output in a stable JSON format for scripts")
 	})
 }

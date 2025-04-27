@@ -35,24 +35,24 @@ an lfs option can be scoped inside the configuration for a remote.
 
 === General settings
 
-* `lfs.url` / `remote.<remote>.lfsurl`
+* `lfs.url` / `remote.<name>.lfsurl`
 +
 The url used to call the Git LFS remote API. Default blank (derive from
 clone URL).
-* `lfs.pushurl` / `remote.<remote>.lfspushurl`
+* `lfs.pushurl` / `remote.<name>.lfspushurl`
 +
 The url used to call the Git LFS remote API when pushing. Default blank
 (derive from either LFS non-push urls or clone url).
 * `remote.lfsdefault`
 +
 The remote used to find the Git LFS remote API. `lfs.url` and
-`branch.*.remote` for the current branch override this setting. If this
+`branch.<name>.remote` for the current branch override this setting. If this
 setting is not specified and there is exactly one remote, that remote is
 picked; otherwise, the default is `origin`.
 * `remote.lfspushdefault`
 +
 The remote used to find the Git LFS remote API when pushing. `lfs.url`
-and `branch.*.pushremote` for the current branch override this setting.
+and `branch.<name>.pushremote` for the current branch override this setting.
 If this setting is not set, `remote.pushdefault` is used, or if that is
 not set, the order of selection is used as specified in the
 `remote.lfsdefault` above.
@@ -61,13 +61,13 @@ not set, the order of selection is used as specified in the
 This boolean option enables the remote autodetect feaure within Git LFS.
 LFS tries to derive the corresponding remote from the commit information
 and, in case of success, ignores the settings defined by
-`remote.lfsdefault` and `remote.<remote>.lfsurl`.
+`remote.lfsdefault` and `remote.<name>.lfsurl`.
 * `lfs.remote.searchall`
 +
 This boolean option enables Git LFS to search all registered remotes to
 find LFS data. This is a fallback mechanism executed only if the LFS
 data could not be found via the ordinary heuristics as described in
-`remote.lfsdefault`, `remote.<remote>.lfsurl` and, if enabled,
+`remote.lfsdefault`, `remote.<name>.lfsurl` and, if enabled,
 `lfs.remote.autodetect`.
 * `lfs.dialtimeout`
 +
@@ -78,7 +78,7 @@ and wait for a response. Default: 30 seconds
 +
 Sets the maximum time, in seconds, that the HTTP client will wait for a
 TLS handshake. Default: 30 seconds.
-* `lfs.activitytimeout` / `lfs.https://<host>.activitytimeout`
+* `lfs.activitytimeout` / `lfs.<url>.activitytimeout`
 +
 Sets the maximum time, in seconds, that the HTTP client will wait for
 the next tcp read or write. If < 1, no activity timeout is used at all.
@@ -209,7 +209,7 @@ value of three will be used instead.
 * `lfs.transfer.enablehrefrewrite`
 +
 If set to true, this enables rewriting href of LFS objects using
-`url.*.insteadof/pushinsteadof` config. `pushinsteadof` is used only for
+`url.<base>.insteadof/pushinsteadof` config. `pushinsteadof` is used only for
 uploading, and `insteadof` is used for downloading and for uploading
 when `pushinsteadof` is not set.
 * `lfs.transfer.batchSize`
@@ -435,8 +435,8 @@ be used, including and limited to:
 * lfs.pushurl
 * lfs.skipdownloaderrors
 * lfs.url
-* lfs.\{*}.access
-* remote.\{name}.lfsurl
+* lfs.<url>.access
+* remote.<name>.lfsurl
 
 The set of keys allowed in this file is restricted for security reasons.
 

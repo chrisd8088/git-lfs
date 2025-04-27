@@ -72,9 +72,8 @@ with Git for Windows.
 * Bash:
 +
 While Bash does not offer tab-completion for Git by default, a completion
-script is available from the Git project, as described in the documentation:
-+
-https://git-scm.com/book/en/v2/Appendix-A%3A-Git-in-Other-Environments-Git-in-Bash
+script is available from the Git project, as described in the
+https://git-scm.com/book/en/v2/Appendix-A%3A-Git-in-Other-Environments-Git-in-Bash[documentation].
 +
 The script returned by the `git lfs completion bash` command should
 be compatible with this Git completion script and allow for tab-completion
@@ -93,11 +92,10 @@ To load the script in all future sessions, add this command to your Bash
 startup files, or place the file in one of the locations searched by
 the utilities from the bash-completion package.
 +
-The bash-completion project, which is separate from the GNU Bash shell
-itself, includes a large number of command completion scripts and utilities
-to load them automatically when starting a new session:
-+
-https://github.com/scop/bash-completion
+The https://github.com/scop/bash-completion[bash-completion project],
+which is separate from the GNU Bash shell itself, includes a large number
+of command completion scripts and utilities which may be loaded automatically
+when starting a new session.
 +
 The Git LFS completion script for Bash depends on several functions provided
 by the bash-completion package, and so that package must be installed in
@@ -252,9 +250,8 @@ relevant to your system's bash-completion package.
 * fish:
 +
 The fish shell searches for completion scripts in a number of locations,
-as described in the documentation:
-+
-https://fishshell.com/docs/current/completions.html#where-to-put-completions
+as described in the
+https://fishshell.com/docs/current/completions.html#where-to-put-completions[documentation].
 +
 To load the Git LFS completion script in all sessions started by the
 current user (but not other users), store the script in the

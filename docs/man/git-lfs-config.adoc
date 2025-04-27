@@ -157,9 +157,10 @@ be made. The custom transfer agent has to be defined in a
 `lfs.customtransfer.<name>` is a settings group which defines a custom
 transfer hook which allows you to upload/download via an intermediate
 process, using any mechanism you like (rather than just HTTP). `path`
-should point to the process you wish to invoke. The protocol between the
-git-lfs client and the custom transfer process is documented at
-https://github.com/git-lfs/git-lfs/blob/main/docs/custom-transfers.md
+should point to the process you wish to invoke. The intermediate
+process must support the
+https://github.com/git-lfs/git-lfs/blob/main/docs/custom-transfers.md#protocol[protocol]
+used by the Git LFS client to communicate with custom transfer agents.
 +
 The `<name>` must be a unique identifier that the LFS server understands. When
 calling the LFS API the client will include a list of supported transfer
@@ -327,9 +328,10 @@ locked by another user.
 hook. You should set this if you're not using File Locking, or your Git
 server verifies locked files on pushes automatically.
 +
-Supports URL config lookup as described in:
-https://git-scm.com/docs/git-config#Documentation/git-config.txt-httplturlgt. To set this
-value per-host:
+URL configuration lookup follows the logic described in the Git
+documentation of the `http.<url>.*`
+https://git-scm.com/docs/git-config#Documentation/git-config.txt-httplturlgt[configuration options],
+so to set this value for a specific host such as `example.com`, use:
 ....
 git config --global lfs.https://example.com/.locksverify [true|false]
 ....

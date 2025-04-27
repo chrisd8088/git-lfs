@@ -330,7 +330,9 @@ server verifies locked files on pushes automatically.
 Supports URL config lookup as described in:
 https://git-scm.com/docs/git-config#Documentation/git-config.txt-httplturlgt. To set this
 value per-host:
-`git config --global lfs.https://example.com/.locksverify [true|false]`.
+....
+git config --global lfs.https://example.com/.locksverify [true|false]
+....
 * `lfs.sshtransfer` / `lfs.<url>.sshtransfer`
 +
 Configures whether SSH transfers (the pure SSH protocol) are used.

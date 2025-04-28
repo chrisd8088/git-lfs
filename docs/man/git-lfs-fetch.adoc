@@ -20,11 +20,11 @@ This does not update the working copy.
 
 `-I <paths>`::
 `--include=<paths>`::
-  Specify lfs.fetchinclude just for this invocation; see
+  Specify `lfs.fetchinclude` just for this invocation; see
   <<_include_and_exclude>>.
 `-X <paths>`::
 `--exclude=<paths>`::
-  Specify lfs.fetchexclude just for this invocation; see
+  Specify `lfs.fetchexclude` just for this invocation; see
   <<_include_and_exclude>>.
 `--recent`::
   Download objects referenced by recent branches & commits in addition to those
@@ -33,7 +33,7 @@ This does not update the working copy.
   Download all objects that are referenced by any commit reachable from the refs
   provided as arguments. If no refs are provided, then all refs are fetched.
   This is primarily for backup and migration purposes. Cannot be combined with
-  --recent or --include/--exclude. Ignores any globally configured include and
+  `--recent` or `--include`/`--exclude`. Ignores any globally configured include and
   exclude paths to ensure that all objects are downloaded.
 `--prune`::
 `-p`::
@@ -82,7 +82,7 @@ media/reallybigfiles, but fetch everything else
 * `git config lfs.fetchinclude "media"`
 `git config lfs.fetchexclude "media/excessive"`
 +
-Only fetch LFS objects in the 'media' folder, but exclude those in one
+Only fetch LFS objects in the `media` folder, but exclude those in one
 of its subfolders.
 
 == DEFAULT REMOTE
@@ -100,7 +100,7 @@ also included. See <<_recent_changes>> for details.
 == RECENT CHANGES
 
 If the `--recent` option is specified, or if the gitconfig option
-`lfs.fetchrecentalways` is true, then after the current ref (or those in
+`lfs.fetchrecentalways` is `true`, then after the current ref (or those in
 the arguments) is fetched, we also search for 'recent' changes to fetch
 objects for, so that it's more convenient to checkout or diff those
 commits without incurring further downloads.
@@ -111,20 +111,20 @@ options:
 `lfs.fetchrecentrefsdays`::
   If non-zero, includes branches which have
   commits within N days of the current date. Only local refs are included
-  unless lfs.fetchrecentremoterefs is true. The default is 7 days.
+  unless `lfs.fetchrecentremoterefs` is `true`. The default is 7 days.
 `lfs.fetchrecentremoterefs`::
-  If true, fetches remote refs (for the remote you're fetching) as well as local
+  If `true`, fetches remote refs (for the remote you're fetching) as well as local
   refs in the recent window. This is useful to fetch objects for remote branches
-  you might want to check out later. The default is true; if you set this to
-  false, fetching for those branches will only occur when you either check them
-  out (losing the advantage of fetch --recent), or create a tracking local
+  you might want to check out later. The default is `true`; if you set this to
+  `false`, fetching for those branches will only occur when you either check them
+  out (losing the advantage of fetch `--recent`), or create a tracking local
   branch separately then fetch again.
 `lfs.fetchrecentcommitsdays`::
   In addition to fetching at branches, also fetches changes made within N days
   of the latest commit on the branch. This is useful if you're often reviewing
-  recent changes. The default is 0 (no previous changes).
+  recent changes. The default is `0` (no previous changes).
 `lfs.fetchrecentalways`::
-  Always operate as if --recent was provided on the command line.
+  Always operate as if `--recent` was provided on the command line.
 
 == EXAMPLES
 
@@ -136,7 +136,7 @@ default remote
 +
 `git lfs fetch --recent`
 * Fetch the LFS objects for the current ref from a secondary remote
-'upstream'
+`upstream`
 +
 `git lfs fetch upstream`
 * Fetch all the LFS objects from the default remote that are referenced

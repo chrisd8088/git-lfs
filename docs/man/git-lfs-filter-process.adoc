@@ -15,7 +15,7 @@ Implement the Git process filter API, exchanging handshake messages and
 then accepting and responding to requests to either clean or smudge a
 file.
 
-filter-process is always run by Git's filter process, and is configured
+`git lfs filter-process` is always run by Git's filter process, and is configured
 by the repository's Git attributes.
 
 In your Git configuration or in a `.lfsconfig` file, you may set either

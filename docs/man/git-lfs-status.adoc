@@ -14,7 +14,7 @@ Display paths of Git LFS objects that
 
 * have not been pushed to the Git LFS server. These are large files that
 would be uploaded by `git push`.
-* have differences between the index file and the current HEAD commit.
+* have differences between the index file and the current `HEAD` commit.
 These are large files that would be committed by `git commit`.
 * have differences between the working tree and the index file. These
 are files that could be staged using `git add`.

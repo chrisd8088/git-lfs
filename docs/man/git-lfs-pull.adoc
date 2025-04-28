@@ -24,10 +24,10 @@ $ git lfs checkout
 
 `-I <paths>`::
 `--include=<paths>`::
-   Specify lfs.fetchinclude just for this invocation; see <<_include_and_exclude>>
+   Specify `lfs.fetchinclude` just for this invocation; see <<_include_and_exclude>>
 `-X <paths>`::
 `--exclude=<paths>`::
-   Specify lfs.fetchexclude just for this invocation; see <<_include_and_exclude>>
+   Specify `lfs.fetchexclude` just for this invocation; see <<_include_and_exclude>>
 
 == INCLUDE AND EXCLUDE
 

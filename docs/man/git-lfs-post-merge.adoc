@@ -11,7 +11,7 @@ git-lfs-post-merge - Git post-merge hook implementation
 == DESCRIPTION
 
 Responds to Git post-merge events. It makes sure that any files which
-are marked as lockable by `git lfs track` are read-only in the working
+are marked as `lockable` by `git lfs track` are read-only in the working
 copy, if not currently locked by the local user.
 
 == SEE ALSO

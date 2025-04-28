@@ -15,7 +15,10 @@ the working copy with the downloaded content if required.
 
 This is equivalent to running the following 2 commands:
 
-git lfs fetch [options] [] git lfs checkout
+....
+$ git lfs fetch [options] [<remote>]
+$ git lfs checkout
+....
 
 == OPTIONS
 

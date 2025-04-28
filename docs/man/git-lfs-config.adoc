@@ -11,7 +11,7 @@ The Git LFS client reads its configuration from any file supported by
 Git configuration files.
 
 Additionally, a small number of settings can be specified in a file
-called `.lfsconfig` at the root of the repository; see the "LFSCONFIG"
+called `.lfsconfig` at the root of the repository; see the <<_lfsconfig>>
 section for more details. This configuration file is useful for setting
 options such as the LFS URL or access type for all users of a
 repository, especially when these differ from the default. The

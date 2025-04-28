@@ -438,6 +438,7 @@ format as the file stored in `.git/config`. It allows a subset of keys to
 be used, including and limited to:
 
 * `lfs.allowincompletepush`
+* `lfs.extension.<name>.priority`
 * `lfs.fetchexclude`
 * `lfs.fetchinclude`
 * `lfs.gitprotocol`

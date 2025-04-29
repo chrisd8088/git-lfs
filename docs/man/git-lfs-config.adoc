@@ -43,6 +43,12 @@ clone URL).
 +
 The URL used to call the Git LFS remote API when pushing. Default blank
 (derive from either LFS non-push URLs or clone URL).
+* `lfs.gitProtocol`
++
+The scheme to be used in the URL of the Git LFS server API in place of
+the `git` scheme, if the URL as otherwise determined by Git LFS would begin
+with `git://` and therefore imply the use of Git's native protocol, which
+Git LFS does not support.  The default is `https`.
 * `remote.lfsdefault`
 +
 The remote used to find the Git LFS remote API. `lfs.url` and

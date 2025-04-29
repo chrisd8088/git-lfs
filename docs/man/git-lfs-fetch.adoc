@@ -101,11 +101,11 @@ also included. See <<_recent_changes>> for details.
 
 If the `--recent` option is specified, or if the gitconfig option
 `lfs.fetchrecentalways` is `true`, then after the current ref (or those in
-the arguments) is fetched, we also search for 'recent' changes to fetch
+the arguments) is fetched, we also search for "recent" changes to fetch
 objects for, so that it's more convenient to checkout or diff those
 commits without incurring further downloads.
 
-What changes are considered 'recent' is based on a number of gitconfig
+What changes are considered "recent" is based on a number of gitconfig
 options:
 
 `lfs.fetchrecentrefsdays`::

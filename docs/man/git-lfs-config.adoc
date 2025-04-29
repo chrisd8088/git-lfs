@@ -250,7 +250,7 @@ files. The default is 7 days.
 * `lfs.fetchrecentremoterefs`
 +
 If `true`, fetches remote refs (for the remote you're fetching) as well as
-local refs in the recent window. This is useful to fetch objects for
+local refs in the "recent" window. This is useful to fetch objects for
 remote branches you might want to check out later. The default is `true`;
 if you set this to `false`, fetching for those branches will only occur
 when you either check them out (losing the advantage of fetch `--recent`),
@@ -272,7 +272,7 @@ Default `false`.
 +
 The number of days added to the `lfs.fetchrecent*` settings to determine
 what can be pruned. Default is 3 days, i.e. that anything fetched at the
-very oldest edge of the 'recent window' is eligible for pruning 3 days
+very oldest edge of the "recent" window is eligible for pruning 3 days
 later.
 * `lfs.pruneremotetocheck`
 +

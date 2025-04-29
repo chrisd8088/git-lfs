@@ -149,8 +149,8 @@ those changes to your remotes.
 `--everything`::
   See <<_include_and_exclude_references>>.
 +
-Note: Git refs are "case-sensitive" on all platforms in "packed from"
-(see git-pack-refs(1)). On "case-insensitive" file systems, e.g. NTFS
+Note: Git refs are case-sensitive on all platforms in "packed" form
+(see git-pack-refs(1)). On case-insensitive file systems, e.g. NTFS
 on Windows or default APFS on macOS, git-lfs-migrate(1) would only
 migrate the first ref if two or more refs are equal except for
 upper/lower case letters.

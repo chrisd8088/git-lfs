@@ -300,10 +300,10 @@ Always run `git lfs prune` as if `--verify-unreachable` was provided.
 Git LFS extensions enable the manipulation of files streams during
 smudge and clean. `name` groups the settings for a single extension, and
 the settings are:
-** `clean` The command which runs when files are added to the index
-** `smudge` The command which runs when files are written to the working
-copy
-** `priority` The order of this extension compared to others
+** `clean` - The command which runs when files are added to the index.
+** `smudge` - The command which runs when files are written to the working
+copy.
+** `priority` - The order of this extension compared to others.
 
 === Other settings
 
@@ -380,13 +380,13 @@ format:
 `<direction> <current>/<total files> <downloaded>/<total> <name>`
 +
 Each field is described below:
-** `direction`: The direction of transfer, either `checkout`,
+** `direction` - The direction of transfer, either `checkout`,
 `download`, or `upload`.
-** `current` The index of the currently transferring file.
-** `total files` The estimated count of all files to be transferred.
-** `downloaded` The number of bytes already downloaded.
-** `total` The entire size of the file, in bytes.
-** `name` The name of the file.
+** `current` - The index of the currently transferring file.
+** `total files` - The estimated count of all files to be transferred.
+** `downloaded` - The number of bytes already downloaded.
+** `total` - The entire size of the file, in bytes.
+** `name` - The name of the file.
 * `GIT_LFS_FORCE_PROGRESS` `lfs.forceprogress`
 +
 Controls whether Git LFS will suppress progress status when the standard

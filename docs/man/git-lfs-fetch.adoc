@@ -51,7 +51,12 @@ This does not update the working copy.
   Print what would be fetched, without actually fetching anything.
 `-j`::
 `--json`::
-  Give the output in a stable JSON format for scripts.
+  Writes the details of all object transfer requests as JSON to STDOUT,
+  if the command exits successfully. When `--dry-run` is also specified,
+  writes the details of the transfers that would occur if the objects
+  were fetched. Intended for interoperation with external tools.
+  If the command returns with a non-zero exit code, plain text messages
+  will be sent to STDERR.
 
 == INCLUDE AND EXCLUDE
 

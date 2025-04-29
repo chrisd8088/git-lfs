@@ -53,7 +53,10 @@ indicates an LFS pointer.
    Show only the lfs tracked file names.
 `-j`::
 `--json`::
-   Give the output in a stable json format for scripts.
+   Outputs Git LFS file information as JSON to STDOUT, if the command exits
+   successfully. Intended for interoperation with external tools. If the
+   command returns with a non-zero exit code, plain text messages will be
+   sent to STDERR.
 
 == SEE ALSO
 

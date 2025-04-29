@@ -160,7 +160,7 @@ central repo, or your fork of it - in both cases that's a valid remote
 backup of your work. If origin doesn't exist then by default nothing
 will be pruned because everything is treated as "unpushed".
 
-You can alter the remote via git config: `lfs.pruneremotetocheck`. Set
+You can alter the remote via the Git config `lfs.pruneremotetocheck`. Set
 this to a different remote name to check that one instead of `origin`.
 
 == SEE ALSO

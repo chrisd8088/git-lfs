@@ -2,11 +2,11 @@
 
 == NAME
 
-git-lfs-config - Configuration options for git-lfs
+git-lfs-config - Configuration options for Git LFS
 
 == CONFIGURATION FILES
 
-git-lfs reads its configuration from any file supported by
+The Git LFS client reads its configuration from any file supported by
 `git config -l`, including all per-repository, per-user, and per-system
 Git configuration files.
 
@@ -27,7 +27,7 @@ Settings from Git configuration files override the `.lfsconfig` file.
 This allows you to override settings like `lfs.url` in your local
 environment without having to modify the `.lfsconfig` file.
 
-Most options regarding git-lfs are contained in the `[lfs]` section,
+Most options regarding Git LFS are contained in the `[lfs]` section,
 meaning they are all named `lfs.foo` or similar, although occasionally
 an `lfs` option can be scoped inside the configuration for a remote.
 
@@ -136,7 +136,7 @@ If set to `true`, only basic HTTP upload/download transfers will be used,
 ignoring any more advanced transfers that the client/server may support.
 This is primarily to work around bugs or incompatibilities.
 +
-The git-lfs client supports basic HTTP downloads, resumable HTTP
+The Git LFS client supports basic HTTP downloads, resumable HTTP
 downloads (using `Range` headers), and resumable uploads via tus.io
 protocol. Custom transfer methods can be added via `lfs.customtransfer`
 (see next section). However setting this value to `true` limits the client
@@ -174,7 +174,7 @@ If the custom transfer process requires any arguments, these can be
 provided here. This string will be expanded by the shell.
 * `lfs.customtransfer.<name>.concurrent`
 +
-If `true` (the default), git-lfs will invoke the custom transfer process
+If `true` (the default), Git LFS will invoke the custom transfer process
 multiple times in parallel, according to `lfs.concurrenttransfers`,
 splitting the transfer workload between the processes.
 * `lfs.customtransfer.<name>.direction`

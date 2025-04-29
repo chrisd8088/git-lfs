@@ -2,7 +2,7 @@
 
 == NAME
 
-git-lfs-fsck - Check GIT LFS files for consistency
+git-lfs-fsck - Check Git LFS files for consistency
 
 == SYNOPSIS
 

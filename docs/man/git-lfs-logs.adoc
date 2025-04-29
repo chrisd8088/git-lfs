@@ -2,7 +2,7 @@
 
 == NAME
 
-git-lfs-logs - Show errors from the git-lfs command
+git-lfs-logs - Show errors from the Git LFS client
 
 == SYNOPSIS
 
@@ -13,7 +13,7 @@ git-lfs-logs - Show errors from the git-lfs command
 
 == DESCRIPTION
 
-Display errors from the git-lfs command. Any time it crashes, the
+Display errors from the Git LFS client. Any time it crashes, the
 details are saved to `.git/lfs/logs`.
 
 == COMMANDS

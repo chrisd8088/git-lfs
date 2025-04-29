@@ -37,12 +37,12 @@ an `lfs` option can be scoped inside the configuration for a remote.
 
 * `lfs.url` / `remote.<name>.lfsurl`
 +
-The url used to call the Git LFS remote API. Default blank (derive from
+The URL used to call the Git LFS remote API. Default blank (derive from
 clone URL).
 * `lfs.pushurl` / `remote.<name>.lfspushurl`
 +
-The url used to call the Git LFS remote API when pushing. Default blank
-(derive from either LFS non-push urls or clone url).
+The URL used to call the Git LFS remote API when pushing. Default blank
+(derive from either LFS non-push URLs or clone URL).
 * `remote.lfsdefault`
 +
 The remote used to find the Git LFS remote API. `lfs.url` and
@@ -307,7 +307,7 @@ response (authentication required), you don't normally need to set it
 manually.
 +
 If set to `basic` then credentials will be requested before making batch
-requests to this url, otherwise a public request will initially be
+requests to this URL, otherwise a public request will initially be
 attempted.
 * `lfs.<url>.locksverify`
 +

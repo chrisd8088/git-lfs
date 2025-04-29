@@ -300,10 +300,13 @@ Always run `git lfs prune` as if `--verify-unreachable` was provided.
 Git LFS extensions enable the manipulation of files streams during
 smudge and clean. `name` groups the settings for a single extension, and
 the settings are:
++
+--
 ** `clean` - The command which runs when files are added to the index.
 ** `smudge` - The command which runs when files are written to the working
 copy.
 ** `priority` - The order of this extension compared to others.
+--
 
 === Other settings
 
@@ -322,6 +325,8 @@ Determines whether locks are checked before Git pushes. This prevents
 you from pushing changes to files that other users have locked. The Git
 LFS pre-push hook varies its behavior based on the value of this config
 key.
++
+--
 ** `null` - In the absence of a value, Git LFS will attempt the call,
 and warn if it returns an error. If the response is valid, Git LFS will
 set the value to `true`, and will halt the push if the user attempts to
@@ -333,6 +338,8 @@ locked by another user.
 ** `false` - Git LFS will completely skip the lock check in the pre-push
 hook. You should set this if you're not using File Locking, or your Git
 server verifies locked files on pushes automatically.
+--
+
 +
 URL configuration lookup follows the logic described in the Git
 documentation of the `http.<url>.*`
@@ -380,6 +387,8 @@ format:
 `<direction> <current>/<total files> <downloaded>/<total> <name>`
 +
 Each field is described below:
++
+--
 ** `direction` - The direction of transfer, either `checkout`,
 `download`, or `upload`.
 ** `current` - The index of the currently transferring file.
@@ -387,6 +396,7 @@ Each field is described below:
 ** `downloaded` - The number of bytes already downloaded.
 ** `total` - The entire size of the file, in bytes.
 ** `name` - The name of the file.
+--
 * `GIT_LFS_FORCE_PROGRESS` `lfs.forceprogress`
 +
 Controls whether Git LFS will suppress progress status when the standard

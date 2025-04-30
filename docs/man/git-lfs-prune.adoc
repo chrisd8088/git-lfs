@@ -70,10 +70,13 @@ gitignore(5).
   Disables remote verification of unreachable files if
   `lfs.pruneverifyunreachablealways` was enabled in settings. See
   <<_verify_remote>>.
-`--when-unverified=<halt,continue>`::
-  When `--verify-remote` cannot verify an object on the remote, either halt
-  the execution or continue the deletion of verified objects. See
-  <<_verify_remote>>.
+`--when-unverified=<action>`::
+  The action to be taken when  `--verify-remote` is specified and an
+  object which would otherwise be pruned cannot be verified as present on
+  the remote. If `<action>` is `halt`, which is the default, execution of
+  the `git lfs prune` command stops immediately. If `<action>` is `continue`,
+  the command continues, but will only prune verified objects.
+  See <<_verify_remote>>.
 `-v`::
 `--verbose`::
   Report the full detail of what is/would be deleted.

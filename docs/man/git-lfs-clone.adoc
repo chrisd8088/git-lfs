@@ -2,33 +2,51 @@
 
 == NAME
 
-git-lfs-clone - Efficiently clone a LFS-enabled repository
+git-lfs-clone - Clone an LFS-enabled repository
 
 == SYNOPSIS
 
 [source,console,subs="verbatim,quotes",role=synopsis]
 ----
-*git lfs clone* [git clone options] <repository> [<directory>]
+*git lfs clone* [most *git clone* options] [options]
+              <repository> [<directory>]
 ----
 
 == DESCRIPTION
 
-Clone an LFS enabled Git repository more efficiently by disabling LFS
-during the git clone, then performing a `git lfs pull` directly
-afterwards.
+This command is deprecated; use `git clone` instead unless you are using
+a version of Git earlier than v2.15.0, or specifically want to limit which
+Git LFS objects are fetched while cloning. See <<_include_and_exclude>>
+for details.
+
+Git's support for long-running filter processes was introduced in Git
+v2.11.0 and was enhanced in v2.15.0 with the ability for a filter process
+such as Git LFS to delay the processing of individual files so as to allow
+it to operate asynchronously. With these two features, the `git clone`
+command will clone an LFS-enabled repository more efficiently than
+`git lfs clone`, and so `git clone` should now be preferred in most cases.
+
+However, with versions of Git earlier than v2.15.0, and especially with
+versions earlier than v2.11.0, the `git lfs clone` command will be faster
+than a regular `git clone` with Git LFS enabled. Older versions of Git will
+either invoke the `git lfs smudge` command individually for each file (prior
+to Git v2.15.0) or will invoke the long-running `git lfs filter-process`
+command but require it to process each Git LFS object sequentially. The
+`git lfs clone` command instead runs `git clone` with Git LFS disabled,
+and then runs `git lfs pull` afterwards, which operates in batch mode
+and fetches Git LFS objects in parallel.
 
 `git lfs clone` also installs all of the repo-level hooks (`.git/hooks`)
 that LFS requires to operate. If `--separate-git-dir` is given, the
 hooks will be installed there.
 
-This is faster than a regular `git clone` because that will download LFS
-content using the smudge filter, which is executed individually per file
-in the working copy. This is relatively inefficient compared to the
-batch mode and parallel downloads performed by `git lfs pull`.
+The `git lfs clone` command is no longer updated to provide parity with
+the `git clone` command's options, and may be removed in a future
+Git LFS major release.
 
 == OPTIONS
 
-All options supported by `git clone`
+Most options supported by `git clone` as of Git v2.11.0, plus:
 
 `-I <paths>`::
 `--include=<paths>`::

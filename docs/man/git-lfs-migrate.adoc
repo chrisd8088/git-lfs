@@ -177,7 +177,7 @@ history. It supports all the core `migrate` options and these additional
 ones:
 
 `--above=<size>`::
-  Only count files whose individual filesize is above the given size. `size` may
+  Only count files whose individual filesize is above the given size. `<size>` may
   be specified as a number of bytes, or a number followed by a storage unit,
   e.g., "1b", "20 MB", "3 TiB", etc.
 +
@@ -185,10 +185,10 @@ If a set of files sharing a common extension has no files in that set
 whose individual size is above the given `--above` no files no entry for
 that set will be shown.
 `--top=<n>`::
-  Only display the top `n` entries, ordered by how many total files match the
+  Only display the top `<n>` entries, ordered by how many total files match the
   given pathspec. The default is to show only the top 5 entries. When existing
   Git LFS objects are found, an extra, separate "LFS Objects" line is output in
-  addition to the top `n` entries, unless the `--pointers` option is used to
+  addition to the top `<n>` entries, unless the `--pointers` option is used to
   change this behavior.
 `--unit=<unit>`::
   Format the number of bytes in each entry as a quantity of the storage unit
@@ -241,12 +241,12 @@ files tracked and stored with Git LFS. It supports all the core
 `--verbose`::
   Print the commit oid and filename of migrated files to STDOUT.
 `--above=<size>`::
-  Only migrate files whose individual filesize is above the given size. `size`
+  Only migrate files whose individual filesize is above the given size. `<size>`
   may be specified as a number of bytes, or a number followed by a storage unit,
   e.g., "1b", "20 MB", "3 TiB", etc. This option cannot be used with the
   `--include`, `--exclude`, and `--fixup` options.
 `--object-map=<path>`::
-  Write to `path` a file with the mapping of each rewritten commits. The file
+  Write to `<path>` a file with the mapping of each rewritten commits. The file
   format is CSV with this pattern: `OLD-SHA`,`NEW-SHA`
 `--no-rewrite`::
   Migrate objects to Git LFS in a new commit without rewriting Git history.
@@ -306,10 +306,10 @@ ones:
   Print the commit oid and filename of migrated files to
   STDOUT.
 `--object-map=<path>`::
-  Write to `path` a file with the mapping of each rewritten commit. The file
+  Write to `<path>` a file with the mapping of each rewritten commit. The file
   format is CSV with this pattern: `OLD-SHA`,`NEW-SHA`
 `--remote=<git-remote>`::
-  Download LFS objects from the provided `git-remote` during the export. If not
+  Download LFS objects from the provided `<git-remote>` during the export. If not
   provided, defaults to `origin`.
 
 The `export` mode requires at minimum a pattern provided with the

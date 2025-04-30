@@ -8,10 +8,10 @@ git-lfs-pointer - Build, compare, and check pointers
 
 [source,console,subs="verbatim,quotes",role=synopsis]
 ----
-*git lfs pointer* --file=path/to/file
-*git lfs pointer* --file=path/to/file --pointer=path/to/pointer
-*git lfs pointer* --file=path/to/file --stdin
-*git lfs pointer* --check --file=path/to/file
+*git lfs pointer* --file=<file>
+*git lfs pointer* --file=<file> --pointer=<file>
+*git lfs pointer* --file=<file> --stdin
+*git lfs pointer* --check --file=<file>
 ----
 
 == DESCRIPTION
@@ -21,11 +21,11 @@ consistency between different Git LFS implementations.
 
 == OPTIONS
 
-`-f`::
-`--file`::
+`-f <file>`::
+`--file=<file>`::
   A local file to build the pointer from.
-`-p`::
-`--pointer`::
+`-p <file>`::
+`--pointer=<file>`::
   A local file including the contents of a pointer generated from another
   implementation. This is compared to the pointer generated from `--file`.
 `--stdin`::

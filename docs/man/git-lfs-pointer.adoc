@@ -11,7 +11,7 @@ git-lfs-pointer - Build, compare, and check pointers
 `git lfs pointer --file=path/to/file --stdin` +
 `git lfs pointer --check --file=path/to/file`
 
-== Description
+== DESCRIPTION
 
 Builds and optionally compares generated pointer files to ensure
 consistency between different Git LFS implementations.

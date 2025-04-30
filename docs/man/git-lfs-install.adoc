@@ -28,11 +28,14 @@ directory instead.
 Without any options, `git lfs install` will only setup the `lfs` smudge
 and clean filters if they are not already set.
 
+`-f`::
 `--force`::
   Sets the `lfs` smudge and clean filters, overwriting existing values.
+`-l`::
 `--local`::
   Sets the `lfs` smudge and clean filters in the local repository's Git config,
   instead of the global Git config (`~/.gitconfig`).
+`-w`::
 `--worktree`::
   Sets the `lfs` smudge and clean filters in the current working tree's Git
   config, instead of the global Git config (`~/.gitconfig`) or local repository's
@@ -41,6 +44,7 @@ and clean filters if they are not already set.
   one working tree is in use, `--worktree` has the same effect as `--local`.
   This option is only available if the installed Git version is at least 2.20.0
   and therefore supports the `worktreeConfig` extension.
+`-m`::
 `--manual`::
   Print instructions for manually updating your hooks to include Git LFS
   functionality. Use this option if `git lfs install` fails because of existing
@@ -48,6 +52,7 @@ and clean filters if they are not already set.
 `--system`::
   Sets the `lfs` smudge and clean filters in the system Git config, e.g.
   `/etc/gitconfig` instead of the global Git config (`~/.gitconfig`).
+`-s`::
 `--skip-smudge`::
   Skips automatic downloading of objects on clone or pull. This requires a
   manual `git lfs pull` every time a new commit is checked out on your

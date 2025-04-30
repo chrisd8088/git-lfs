@@ -37,6 +37,9 @@ repository.
 `--system`::
   Removes the `lfs` smudge and clean filters from the system Git config, instead
   of the global Git config (`~/.gitconfig`).
+`--file=<file>`::
+  Removes the `lfs` smudge and clean filters from the Git configuration file
+  specified by the `<file>` argument.
 `--skip-repo`::
   Skips cleanup of the local repo; use if you want to uninstall the global LFS
   filters but not make changes to the current repo.

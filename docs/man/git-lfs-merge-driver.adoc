@@ -24,15 +24,15 @@ required for that.
 
 == OPTIONS
 
-`--ancestor <path>`::
+`--ancestor=<path>`::
   Specify the file containing the ancestor revision.
-`--current <path>`::
+`--current=<path>`::
   Specify the file containing the current revision.
-`--marker-size <num>`::
+`--marker-size=<num>`::
   Specify the conflict marker size as an integer.
-`--other <path>`::
+`--other=<path>`::
   Specify the file containing the other revision.
-`--program <program>`::
+`--program=<program>`::
   Specify a command, which is passed to the shell after substitution, that
   performs the actual merge. If this is not specified, `git merge-file` is
   invoked with appropriate arguments to perform the merge of the file.
@@ -54,7 +54,7 @@ driver like so:
 
 [source,console]
 ----
-$ git config merge.lfs-text.driver 'git lfs merge-driver --ancestor %O --current %A --other %B --marker-size %L --output %A'
+$ git config merge.lfs-text.driver 'git lfs merge-driver --ancestor=%O --current=%A --other=%B --marker-size=%L --output=%A'
 ----
 
 This tells Git to invoke the custom Git LFS merge driver, which in turn
@@ -80,7 +80,7 @@ behavior explicitly looks like this:
 [source,console]
 ----
 $ git config merge.lfs-text.driver \
-  'git lfs merge-driver --ancestor %O --current %A --other %B --marker-size %L --output %A --program '\''git merge-file --stdout --marker-size=%%L %%A %%O %%B >%%D'\'''
+  'git lfs merge-driver --ancestor=%O --current=%A --other=%B --marker-size=%L --output=%A --program='\''git merge-file --stdout --marker-size=%%L %%A %%O %%B >%%D'\'''
 ----
 
 The exit status from the custom command should be zero on success or

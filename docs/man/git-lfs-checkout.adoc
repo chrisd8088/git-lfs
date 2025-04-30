@@ -45,7 +45,7 @@ easier. A single Git LFS object's file path must be provided in
 `--theirs`::
   Check out their side (that of the other branch) of the
   conflict for the specified file.
-`--to <path>`::
+`--to=<path>`::
   If the working tree is in a conflicted state, check out the
   portion of the conflict specified by `--base`, `--ours`, or `--theirs`
   to the given path.
@@ -72,8 +72,8 @@ $ git merge conflicting-branch
 CONFLICT (content): Merge conflict in path/to/conflicting/file.dat
 
 # Checkout versions of the conflicting file into temp files
-$ git lfs checkout --to ours.dat --ours path/to/conflicting/file.dat
-$ git lfs checkout --to theirs.dat --theirs path/to/conflicting/file.dat
+$ git lfs checkout --to=ours.dat --ours path/to/conflicting/file.dat
+$ git lfs checkout --to=theirs.dat --theirs path/to/conflicting/file.dat
 
 # Compare conflicting versions in ours.dat and theirs.dat,
 # then resolve conflict (e.g., by choosing one version over

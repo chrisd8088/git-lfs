@@ -329,7 +329,7 @@ commas as delimiters.
 
 Pattern matching is done so as to be functionally equivalent to the
 pattern matching format of `.gitattributes`. In addition to simple file
-extension matches (e.g., `*.gif`) patterns may also specify directory
+extension matches (e.g., `\*.gif`) patterns may also specify directory
 paths, in which case the `path/**` format may be used to match
 recursively.
 

@@ -72,7 +72,7 @@ string clears the value.
 +
 This will only fetch objects referenced in paths in the textures folder,
 and files called foo* in the images folder
-* `git config lfs.fetchinclude "*.jpg,*.png,*.tga"`
+* `git config lfs.fetchinclude "\*.jpg,*.png,*.tga"`
 +
 Only fetch JPG/PNG/TGA files, wherever they are in the repository
 * `git config lfs.fetchexclude "media/reallybigfiles"`

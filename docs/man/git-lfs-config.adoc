@@ -444,7 +444,7 @@ The set of keys allowed in this file is restricted for security reasons.
 
 * Configure a custom LFS endpoint for your repository:
 
-`git config -f .lfsconfig lfs.url https://lfs.example.com/foo/bar/info/lfs`
+`git config -f .lfsconfig lfs.url \https://lfs.example.com/foo/bar/info/lfs`
 
 == SEE ALSO
 

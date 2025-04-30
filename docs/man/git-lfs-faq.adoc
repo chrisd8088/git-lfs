@@ -41,7 +41,7 @@ and therefore avoids its limitations.
 Why do I end up with small text files in my working tree instead of my files?::
   Git LFS stores small text files called pointer files in the repository instead
   of your large files, which it stores elsewhere.  These pointer files usually
-  start with the line `version https://git-lfs.github.com/spec/v1`.
+  start with the line `version \https://git-lfs.github.com/spec/v1`.
 +
 Normally, if you've run `git lfs install` at least once for your user account on
 the system, then Git LFS will be automatically invoked by Git when you check out
@@ -135,11 +135,11 @@ Can I use a proxy with Git LFS?::
   currently support Digest or Kerberos authentication.
 +
 If you're using a proxy, we recommend that you set the full URL in the proxy
-value, including a scheme.  Thus, `http://example.com:3128` is a better choice
+value, including a scheme.  Thus, `\http://example.com:3128` is a better choice
 than `example.com:3128`.  If you need a username and password, they must be
 percent-encoded in the URL, so a username of `foo\bar` with a password of
 `abc@123+` using the above proxy would be
-`http://foo%5cbar:abc%40123%2b@example.com:3128`.
+`\http://foo%5cbar:abc%40123%2b@example.com:3128`.
 +
 Note that, just like with Git, proxies must not modify, buffer, tamper with, or
 change the response to the data in any way, upstream or downstream, and any

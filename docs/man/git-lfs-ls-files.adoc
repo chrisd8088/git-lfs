@@ -6,7 +6,7 @@ git-lfs-ls-files - Show information about Git LFS files in the index and working
 
 == SYNOPSIS
 
-[source,console,subs="verbatim,quotes"]
+[source,console,subs="verbatim,quotes",role=synopsis]
 ----
 *git lfs ls-files* [<ref>]
 *git lfs ls-files* <ref> <ref>

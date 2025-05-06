@@ -6,7 +6,7 @@ git-lfs-pointer - Build, compare, and check pointers
 
 == SYNOPSIS
 
-[source,console,subs="verbatim,quotes"]
+[source,console,subs="verbatim,quotes",role=synopsis]
 ----
 *git lfs pointer* --file=path/to/file
 *git lfs pointer* --file=path/to/file --pointer=path/to/pointer

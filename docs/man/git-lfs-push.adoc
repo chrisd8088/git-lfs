@@ -6,7 +6,7 @@ git-lfs-push - Push queued large files to the Git LFS endpoint
 
 == SYNOPSIS
 
-[source,console,subs="verbatim,quotes"]
+[source,console,subs="verbatim,quotes",role=synopsis]
 ----
 *git lfs push* [options] <remote> [<ref>...]
 *git lfs push* <remote> [<ref>...]

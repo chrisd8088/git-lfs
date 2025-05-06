@@ -6,7 +6,7 @@ git-lfs - Work with large files in Git repositories
 
 == SYNOPSIS
 
-[source,console,subs="verbatim,quotes"]
+[source,console,subs="verbatim,quotes",role=synopsis]
 ----
 *git lfs* <command> [<args>]
 ----

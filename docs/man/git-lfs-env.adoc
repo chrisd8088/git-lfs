@@ -6,7 +6,7 @@ git-lfs-env - Display the Git LFS environment
 
 == SYNOPSIS
 
-[source,console,subs="verbatim,quotes"]
+[source,console,subs="verbatim,quotes",role=synopsis]
 ----
 *git lfs env*
 ----

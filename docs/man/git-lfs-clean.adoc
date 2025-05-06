@@ -6,7 +6,7 @@ git-lfs-clean - Git clean filter that converts large files to pointers
 
 == SYNOPSIS
 
-[source,console,subs="verbatim,quotes"]
+[source,console,subs="verbatim,quotes",role=synopsis]
 ----
 *git lfs clean* <path>
 ----

@@ -50,6 +50,6 @@ but the `git lfs pre-push` command ignores this additional argument.
 
 == SEE ALSO
 
-git-lfs-clean(1), git-lfs-push(1).
+git-lfs-clean(1), git-lfs-push(1), githooks(5)
 
 Part of the git-lfs(1) suite.

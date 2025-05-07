@@ -28,6 +28,6 @@ reference was checked out, and `0` if individual files were checked out.
 
 == SEE ALSO
 
-git-lfs-track(1)
+git-lfs-track(1), githooks(5)
 
 Part of the git-lfs(1) suite.

@@ -25,6 +25,6 @@ made read-only.
 
 == SEE ALSO
 
-git-lfs-post-merge(1), git-lfs-track(1)
+git-lfs-post-merge(1), git-lfs-track(1), githooks(5)
 
 Part of the git-lfs(1) suite.

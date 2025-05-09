@@ -228,7 +228,7 @@ func TestRewriterIgnoresPathsThatDontMatchFilterWithResultCaching(t *testing.T) 
 	include := []string{"*.txt"}
 	exclude := []string{"subdir/*.txt"}
 
-	filter := filepathfilter.New(include, exclude, filepathfilter.GitIgnore, filepathfilter.UseCache(true))
+	filter := filepathfilter.New(include, exclude, filepathfilter.GitIgnore, filepathfilter.EnableCache(10))
 
 	db := DatabaseFromFixture(t, "non-repeated-subtrees.git")
 	r := NewRewriter(db, WithFilter(filter))
@@ -247,7 +247,6 @@ func TestRewriterIgnoresPathsThatDontMatchFilterWithResultCaching(t *testing.T) 
 	assert.Equal(t, 1, seen["a.txt"])
 	assert.Equal(t, 0, seen["subdir/b.txt"])
 }
-
 
 func TestRewriterAllowsAdditionalTreeEntries(t *testing.T) {
 	db := DatabaseFromFixture(t, "linear-history.git")

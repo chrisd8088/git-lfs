@@ -2,9 +2,11 @@ package filepathfilter
 
 import (
 	"strings"
+	"sync"
 
 	"github.com/git-lfs/git-lfs/v3/tr"
 	"github.com/git-lfs/wildmatch/v2"
+	"github.com/golang/groupcache/lru"
 	"github.com/rubyist/tracerx"
 )
 
@@ -19,7 +21,8 @@ type Filter struct {
 	include      []Pattern
 	exclude      []Pattern
 	defaultValue bool
-	cache        map[string]bool
+	cache        *lru.Cache
+	cacheLock    sync.Mutex
 }
 
 type PatternType bool
@@ -39,38 +42,48 @@ func (p PatternType) String() string {
 type options struct {
 	defaultValue bool
 	useCache     bool
+	cacheSize    int
 }
 
-type option func(*options)
+type Option func(*options)
 
 // DefaultValue is an option representing the default value of a filepathfilter
 // if no patterns match.  If this option is not provided, the default is true.
-func DefaultValue(val bool) option {
+func DefaultValue(val bool) Option {
 	return func(args *options) {
 		args.defaultValue = val
 	}
 }
 
-func UseCache(val bool) option {
+func EnableCache(size int) Option {
 	return func(args *options) {
-		args.useCache = val
+		args.useCache = true
+		args.cacheSize = size
 	}
 }
 
-func NewFromPatterns(include, exclude []Pattern, setters ...option) *Filter {
+func DisableCache() Option {
+	return func(args *options) {
+		args.useCache = false
+	}
+}
+
+func NewFromPatterns(include, exclude []Pattern, setters ...Option) *Filter {
 	args := &options{defaultValue: true, useCache: false}
 	for _, setter := range setters {
 		setter(args)
 	}
-	var cache map[string]bool
-	cache = nil
-	if args.useCache {
-		cache = make(map[string]bool)
+
+	f := &Filter{include: include, exclude: exclude, defaultValue: args.defaultValue}
+
+	if args.useCache && args.cacheSize >= 0 {
+		f.cache = lru.New(args.cacheSize)
 	}
-	return &Filter{include: include, exclude: exclude, defaultValue: args.defaultValue, cache: cache}
+
+	return f
 }
 
-func New(include, exclude []string, ptype PatternType, setters ...option) *Filter {
+func New(include, exclude []string, ptype PatternType, setters ...Option) *Filter {
 	return NewFromPatterns(
 		convertToWildmatch(include, ptype),
 		convertToWildmatch(exclude, ptype), setters...)
@@ -95,7 +108,7 @@ func wildmatchToString(ps ...Pattern) []string {
 	return s
 }
 
-func (f *Filter) allowsUncached(filename string) bool {
+func (f *Filter) allows(filename string) bool {
 	var included bool
 	for _, inc := range f.include {
 		if included = inc.Match(filename); included {
@@ -135,17 +148,23 @@ func (f *Filter) Allows(filename string) bool {
 		return true
 	}
 
-	if f.cache == nil {
-		return f.allowsUncached(filename)
+	if f.cache != nil {
+		f.cacheLock.Lock()
+		res, ok := f.cache.Get(filename)
+		f.cacheLock.Unlock()
+		if ok {
+			return res.(bool)
+		}
 	}
 
-	cachedResult, cacheHit := f.cache[filename]
-	if cacheHit {
-		return cachedResult
+	res := f.allows(filename)
+
+	if f.cache != nil {
+		f.cacheLock.Lock()
+		f.cache.Add(filename, res)
+		f.cacheLock.Unlock()
 	}
 
-	res := f.allowsUncached(filename)
-	f.cache[filename] = res
 	return res
 }
 

@@ -236,27 +236,13 @@ func convertToWildmatch(rawpatterns []string, ptype PatternType, cfg Environment
 	return patterns
 }
 
-type FakeEnvironment struct{}
-
-func NewFakeEnvironment() FakeEnvironment {
-	return FakeEnvironment{}
-}
-
-func (f FakeEnvironment) Get(key string) (val string, ok bool) {
-	return "", false
-}
-
-func (f FakeEnvironment) Bool(key string, def bool) (val bool) {
-	return def
-}
-
 type Environment interface {
 	Get(key string) (val string, ok bool)
 	Bool(key string, def bool) (val bool)
 }
 
 func caseFromConfig(cfg Environment) func(w *wildmatch.Wildmatch) {
-	if cfg.Bool("core.ignorecase", false) {
+	if cfg != nil && cfg.Bool("core.ignorecase", false) {
 		return wildmatch.CaseFold
 	} else {
 		return func(w *wildmatch.Wildmatch) {}

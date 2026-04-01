@@ -41,7 +41,6 @@ type Filesystem struct {
 	GitStorageDir string   // parent of objects/lfs (may be same as GitDir but may not)
 	LFSStorageDir string   // parent of lfs objects and tmp dirs. Default: ".git/lfs"
 	ReferenceDirs []string // alternative local media dirs (relative to clone reference repo)
-	GitConfig     Environment
 	lfsobjdir     string
 	tmpdir        string
 	logdir        string
@@ -200,10 +199,9 @@ func (f *Filesystem) Cleanup() error {
 // path to the bare repo, workdir is the path to the repository working
 // directory, and lfsdir is the optional path to the `.git/lfs` directory.
 // repoPerms is the permissions for directories in the repository.
-func New(env Environment, cfg Environment, gitdir, workdir, lfsdir string, repoPerms os.FileMode) *Filesystem {
+func New(env Environment, gitdir, workdir, lfsdir string, repoPerms os.FileMode) *Filesystem {
 	fs := &Filesystem{
 		GitStorageDir: resolveGitStorageDir(gitdir),
-		GitConfig:     cfg,
 	}
 
 	fs.ReferenceDirs = resolveReferenceDirs(env, fs.GitStorageDir)

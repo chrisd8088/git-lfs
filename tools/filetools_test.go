@@ -9,7 +9,6 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/git-lfs/git-lfs/v3/filepathfilter"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -198,7 +197,7 @@ func TestFastWalkBasic(t *testing.T) {
 
 	expectedEntries := createFastWalkInputData(10, 160)
 
-	walker := fastWalkWithExcludeFiles(expectedEntries[0], filepathfilter.NewFakeEnvironment())
+	walker := fastWalkDir(expectedEntries[0])
 	gotEntries, gotErrors := collectFastWalkResults(walker.ch)
 
 	assert.Empty(t, gotErrors)

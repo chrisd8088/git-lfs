@@ -52,7 +52,7 @@ type Filesystem struct {
 
 func (f *Filesystem) EachObject(fn func(Object) error) error {
 	var eachErr error
-	tools.FastWalkDir(f.LFSObjectDir(), f.GitConfig, func(parentDir string, info os.FileInfo, err error) {
+	tools.FastWalkDir(f.LFSObjectDir(), func(parentDir string, info os.FileInfo, err error) {
 		if err != nil {
 			eachErr = err
 			return

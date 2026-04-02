@@ -37,5 +37,25 @@ pushd "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null
   done
 popd > /dev/null
 
-PATH+=:"$prefix/bin"
-git lfs install
+if [ "$(id -u)" -eq 0 ]; then
+  cat <<-EOF
+	The Git LFS binary is now installed in '$prefix/bin'.
+
+	To configure Git LFS as a regular user, run 'git lfs install'.
+
+	To configure Git LFS for all users of the system, run:
+
+	  $ git config set --system core.hooksPath <system-hooks-path>
+	  $ git lfs install --system
+
+	Note that you may need to run these commands with 'sudo'.
+
+	If a system-wide Git hooks location is already configured, you can skip
+	the first command.  Otherwise, <system-hooks-path> should specify an
+	absolute path to your preferred location for system-wide Git hooks.
+
+EOF
+else
+  PATH+=:"$prefix/bin"
+  git lfs install
+fi
